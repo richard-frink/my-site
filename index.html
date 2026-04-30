@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260430">
+  <link rel="stylesheet" href="style.css?v=20260430-2">
 </head>
 <body>
   <div id="left-stack">
@@ -341,9 +341,10 @@
     })();
 
     (function () {
-      const sidebar = document.getElementById('activities-sidebar');
-      const toggle  = document.getElementById('activities-toggle');
-      const handle  = document.getElementById('activities-handle');
+      const sidebar  = document.getElementById('activities-sidebar');
+      const toggle   = document.getElementById('activities-toggle');
+      const handle   = document.getElementById('activities-handle');
+      const titleBar = sidebar.querySelector('.title-bar');
 
       const collapsed = localStorage.getItem('activities-collapsed') !== '0';
       if (collapsed) sidebar.classList.add('collapsed');
@@ -352,8 +353,16 @@
         sidebar.classList.toggle('collapsed', v);
         localStorage.setItem('activities-collapsed', v ? '1' : '0');
       }
-      toggle.addEventListener('click', () => setCollapsed(true));
+      function toggleCollapsed() {
+        setCollapsed(!sidebar.classList.contains('collapsed'));
+      }
+
+      toggle.addEventListener('click', (e) => { e.stopPropagation(); toggleCollapsed(); });
       handle.addEventListener('click', () => setCollapsed(false));
+      titleBar.addEventListener('click', (e) => {
+        if (e.target.closest('.title-bar-controls')) return;
+        toggleCollapsed();
+      });
     })();
 
     (function () {

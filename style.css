@@ -156,6 +156,20 @@ h1 {
   font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
 }
 
+/* Fixed background image — sits behind everything and never moves on scroll. */
+[data-site="nature"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+[data-site="nature"][data-theme="day"]   body::before { background-image: url("./nature-day.jpg"); }
+[data-site="nature"][data-theme="night"] body::before { background-image: url("./nature-night.jpg"); }
+
 [data-site="nature"] * { scrollbar-width: thin; }
 [data-site="nature"] *::-webkit-scrollbar { width: 8px; height: 8px; }
 [data-site="nature"] *::-webkit-scrollbar-track { background: transparent; }
@@ -296,7 +310,7 @@ h1 {
 /* Nature — Daytime                                                 */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="day"] body {
-  background: url("./nature-day.jpg") center / cover no-repeat fixed, #7ba05b;
+  background: #7ba05b;
   color: #2d3a1f;
 }
 [data-site="nature"][data-theme="day"] .window {
@@ -338,7 +352,7 @@ h1 {
 /* Nature — Nighttime                                               */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="night"] body {
-  background: url("./nature-night.jpg") center / cover no-repeat fixed, #0f2418;
+  background: #0f2418;
   color: #e6dfc4;
 }
 [data-site="nature"][data-theme="night"] .window {
@@ -461,6 +475,8 @@ h1 {
 
   main { position: relative; z-index: 20; }
   #activities-sidebar.collapsed { transform: none !important; }
+  #activities-sidebar.collapsed .window-body { display: none; }
+  #activities-sidebar .title-bar { cursor: pointer; }
   #activities-handle { display: none !important; }
 
   main { width: 100%; }
