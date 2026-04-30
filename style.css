@@ -213,7 +213,7 @@ h1 {
 /* Nature — Daytime                                                 */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="day"] body {
-  background: url("nature-day.jpg") center / cover no-repeat fixed, #7ba05b;
+  background: url("./nature-day.jpg") center / cover no-repeat fixed, #7ba05b;
   color: #2d3a1f;
 }
 [data-site="nature"][data-theme="day"] .window {
@@ -259,7 +259,7 @@ h1 {
 /* Nature — Nighttime                                               */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="night"] body {
-  background: url("nature-night.jpg") center / cover no-repeat fixed, #0f2418;
+  background: url("./nature-night.jpg") center / cover no-repeat fixed, #0f2418;
   color: #e6dfc4;
 }
 [data-site="nature"][data-theme="night"] .window {
