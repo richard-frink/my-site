@@ -482,8 +482,10 @@
       undoAllEl.addEventListener('click',  () => { lines = []; redraw(); });
 
       dynamicCanvas.addEventListener('pointerdown', (e) => {
+        if (!enableEl.checked) return;
+        e.preventDefault();
         drawing = true;
-        dynamicCanvas.setPointerCapture(e.pointerId);
+        try { dynamicCanvas.setPointerCapture(e.pointerId); } catch (_) {}
         const mode = dynamicEl.checked ? 'dynamic' : 'static';
         const color = mode === 'dynamic' ? DYNAMIC_COLOR : colorEl.value;
         current = { points: [{ x: e.clientX, y: e.clientY }], color, width: LINE_WIDTH, mode };
@@ -491,6 +493,7 @@
       });
       dynamicCanvas.addEventListener('pointermove', (e) => {
         if (!drawing || !current) return;
+        e.preventDefault();
         const pts = current.points;
         const a = pts[pts.length - 1];
         const b = { x: e.clientX, y: e.clientY };
@@ -505,6 +508,8 @@
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
       });
+      dynamicCanvas.addEventListener('touchstart', (e) => { if (enableEl.checked) e.preventDefault(); }, { passive: false });
+      dynamicCanvas.addEventListener('touchmove',  (e) => { if (enableEl.checked) e.preventDefault(); }, { passive: false });
       function endStroke() {
         if (current && fadeEl.checked) {
           current.fade = true;

@@ -90,7 +90,10 @@ h1 {
 }
 #draw-canvas-static  { z-index: 5; }
 #draw-canvas-dynamic { z-index: 6; mix-blend-mode: difference; }
-#draw-canvas-dynamic.active { pointer-events: auto; }
+#draw-canvas-dynamic.active {
+  pointer-events: auto;
+  touch-action: none;
+}
 
 .window.minimized .window-body,
 .window.minimized .status-bar {
@@ -423,3 +426,62 @@ h1 {
 
 [data-site="nature"][data-theme="night"] .window a         { color: #f2c878; }
 [data-site="nature"][data-theme="night"] .window a:visited { color: #d4a85e; }
+
+/* ---------------------------------------------------------------- */
+/* Mobile layout — desktop is unchanged above this breakpoint       */
+/* ---------------------------------------------------------------- */
+@media (max-width: 768px) {
+  body {
+    display: block;
+    padding: 8px;
+  }
+
+  #left-stack {
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: none;
+    margin-bottom: 8px;
+    overflow: visible;
+    resize: none;
+  }
+
+  #activities-sidebar {
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: none;
+    margin-bottom: 8px;
+    overflow: visible;
+    resize: none;
+    transform: none !important;
+    transition: none;
+  }
+  #activities-sidebar.collapsed { transform: none !important; }
+  #activities-handle { display: none !important; }
+
+  main { width: 100%; }
+  #main-window {
+    width: auto !important;
+    max-width: 100%;
+    margin-bottom: 8px;
+  }
+
+  #main-reopen {
+    left: 8px;
+    bottom: 8px;
+    right: auto;
+  }
+
+  /* Sidebar fieldsets get a little tighter on small screens */
+  fieldset { padding: 6px 10px 10px; }
+
+  /* Avoid horizontal overflow from long URLs in link text */
+  .sidebar-list a { word-break: break-word; }
+
+  /* Status bar wraps if needed so the button stays accessible */
+  .status-bar { flex-wrap: wrap; row-gap: 4px; }
+  #cpu-stress { margin-left: 0; }
+}
