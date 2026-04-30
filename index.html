@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260430">
 </head>
 <body>
   <div id="left-stack">
@@ -481,8 +481,17 @@
       undoLastEl.addEventListener('click', () => { lines.pop(); redraw(); });
       undoAllEl.addEventListener('click',  () => { lines = []; redraw(); });
 
+      const activePointers = new Set();
+      function endStrokeOnly() { drawing = false; current = null; }
+
       dynamicCanvas.addEventListener('pointerdown', (e) => {
         if (!enableEl.checked) return;
+        activePointers.add(e.pointerId);
+        if (activePointers.size > 1) {
+          // Second finger means the user wants to scroll/zoom — abandon any active stroke.
+          endStrokeOnly();
+          return;
+        }
         e.preventDefault();
         drawing = true;
         try { dynamicCanvas.setPointerCapture(e.pointerId); } catch (_) {}
@@ -493,6 +502,7 @@
       });
       dynamicCanvas.addEventListener('pointermove', (e) => {
         if (!drawing || !current) return;
+        if (activePointers.size > 1) return;
         e.preventDefault();
         const pts = current.points;
         const a = pts[pts.length - 1];
@@ -508,9 +518,18 @@
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
       });
-      dynamicCanvas.addEventListener('touchstart', (e) => { if (enableEl.checked) e.preventDefault(); }, { passive: false });
-      dynamicCanvas.addEventListener('touchmove',  (e) => { if (enableEl.checked) e.preventDefault(); }, { passive: false });
-      function endStroke() {
+      // Block the browser's default touch behavior only for single-finger touches.
+      // Two+ fingers fall through so the page can scroll/zoom natively.
+      dynamicCanvas.addEventListener('touchstart', (e) => {
+        if (!enableEl.checked) return;
+        if (e.touches.length === 1) e.preventDefault();
+      }, { passive: false });
+      dynamicCanvas.addEventListener('touchmove', (e) => {
+        if (!enableEl.checked) return;
+        if (e.touches.length === 1 && drawing) e.preventDefault();
+      }, { passive: false });
+      function endStroke(e) {
+        if (e && e.pointerId !== undefined) activePointers.delete(e.pointerId);
         if (current && fadeEl.checked) {
           current.fade = true;
           current.bornAt = performance.now();
@@ -521,6 +540,7 @@
       }
       dynamicCanvas.addEventListener('pointerup',     endStroke);
       dynamicCanvas.addEventListener('pointercancel', endStroke);
+      dynamicCanvas.addEventListener('pointerleave',  endStroke);
 
       window.addEventListener('resize', resize);
       resize();

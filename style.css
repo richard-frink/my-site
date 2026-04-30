@@ -90,10 +90,7 @@ h1 {
 }
 #draw-canvas-static  { z-index: 5; }
 #draw-canvas-dynamic { z-index: 6; mix-blend-mode: difference; }
-#draw-canvas-dynamic.active {
-  pointer-events: auto;
-  touch-action: none;
-}
+#draw-canvas-dynamic.active { pointer-events: auto; }
 
 .window.minimized .window-body,
 .window.minimized .status-bar {
@@ -437,7 +434,8 @@ h1 {
   }
 
   #left-stack {
-    position: static;
+    position: relative;
+    z-index: 20;
     width: auto;
     min-width: 0;
     max-width: none;
@@ -448,7 +446,8 @@ h1 {
   }
 
   #activities-sidebar {
-    position: static;
+    position: relative;
+    z-index: 20;
     width: auto;
     min-width: 0;
     max-width: none;
@@ -459,6 +458,8 @@ h1 {
     transform: none !important;
     transition: none;
   }
+
+  main { position: relative; z-index: 20; }
   #activities-sidebar.collapsed { transform: none !important; }
   #activities-handle { display: none !important; }
 
