@@ -17,6 +17,7 @@ body {
   display: grid;
   place-items: center;
   padding: 2rem;
+  font-size: 14px;
 }
 
 .title-bar {
@@ -25,7 +26,7 @@ body {
 
 h1 {
   margin: 0 0 0.5rem;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
 }
 
 .title-bar-text,
@@ -212,9 +213,7 @@ h1 {
 /* Nature — Daytime                                                 */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="day"] body {
-  background:
-    radial-gradient(ellipse at 80% 0%, #ffe9a8 0%, transparent 40%),
-    linear-gradient(180deg, #a8d8ef 0%, #c5e3b8 55%, #7ba05b 100%);
+  background: url("nature-day.jpg") center / cover no-repeat fixed, #7ba05b;
   color: #2d3a1f;
 }
 [data-site="nature"][data-theme="day"] .window {
@@ -260,10 +259,7 @@ h1 {
 /* Nature — Nighttime                                               */
 /* ---------------------------------------------------------------- */
 [data-site="nature"][data-theme="night"] body {
-  background:
-    radial-gradient(circle at 82% 14%, rgba(245, 240, 210, 0.55) 0%, rgba(245, 240, 210, 0.15) 4%, transparent 12%),
-    radial-gradient(ellipse at 80% 10%, rgba(180, 200, 230, 0.18) 0%, transparent 40%),
-    linear-gradient(180deg, #07111f 0%, #122236 45%, #0f2418 100%);
+  background: url("nature-night.jpg") center / cover no-repeat fixed, #0f2418;
   color: #e6dfc4;
 }
 [data-site="nature"][data-theme="night"] .window {
