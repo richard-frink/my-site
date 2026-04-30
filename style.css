@@ -1,35 +1,312 @@
 :root {
-  --bg: #0f1115;
-  --fg: #e6e6e6;
-  --accent: #6aa6ff;
+  --desktop-bg: #008080;
+  --titlebar-bg: linear-gradient(90deg, #000080, #1084d0);
 }
 
-* { box-sizing: border-box; }
+[data-theme="rainy"]    { --desktop-bg: #6a8caa; --titlebar-bg: linear-gradient(90deg, #2a4d72, #4a78a0); }
+[data-theme="desert"]   { --desktop-bg: #c8b896; --titlebar-bg: linear-gradient(90deg, #6b4226, #a87750); }
+[data-theme="eggplant"] { --desktop-bg: #5d3a5d; --titlebar-bg: linear-gradient(90deg, #2c1538, #6b3a72); }
+[data-theme="storm"]    { --desktop-bg: #4a4a4a; --titlebar-bg: linear-gradient(90deg, #1a1a1a, #555555); }
+[data-theme="rose"]     { --desktop-bg: #d4a5b5; --titlebar-bg: linear-gradient(90deg, #8b3a5c, #c87090); }
+[data-theme="matrix"]   { --desktop-bg: #001a00; --titlebar-bg: linear-gradient(90deg, #002200, #00aa00); }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--fg);
   min-height: 100vh;
+  background: var(--desktop-bg);
   display: grid;
   place-items: center;
   padding: 2rem;
-  line-height: 1.5;
 }
 
-main {
-  max-width: 40rem;
-  text-align: center;
+.title-bar {
+  background: var(--titlebar-bg);
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  margin: 0 0 1rem;
-  color: var(--accent);
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
 }
 
-p {
-  font-size: 1.125rem;
-  opacity: 0.85;
+.title-bar-text,
+legend,
+.theme-group summary,
+h1 {
+  text-transform: lowercase;
 }
+
+#left-stack {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 220px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.left-sidebar .title-bar { cursor: pointer; }
+
+#activities-sidebar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 220px;
+  z-index: 10;
+  transition: transform 0.25s ease;
+}
+#activities-sidebar.collapsed {
+  transform: translateX(calc(100% + 32px));
+}
+#activities-handle {
+  position: fixed;
+  top: 16px;
+  right: 0;
+  z-index: 9;
+  display: none;
+}
+#activities-sidebar.collapsed ~ #activities-handle {
+  display: block;
+}
+
+#draw-canvas-static,
+#draw-canvas-dynamic {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  cursor: crosshair;
+}
+#draw-canvas-static  { z-index: 5; }
+#draw-canvas-dynamic { z-index: 6; mix-blend-mode: difference; }
+#draw-canvas-dynamic.active { pointer-events: auto; }
+
+.window.minimized .window-body,
+.window.minimized .status-bar {
+  display: none;
+}
+.window.minimized .title-bar {
+  cursor: pointer;
+}
+#main-window.closed {
+  display: none;
+}
+
+.sidebar-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.sidebar-list li {
+  margin-bottom: 2px;
+}
+#main-reopen {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 10;
+  min-width: 110px;
+}
+
+.theme-group {
+  margin-top: 8px;
+  padding: 4px 8px 6px;
+  border: 1px solid #808080;
+  background: #d4d0c8;
+}
+.theme-group summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 2px 0;
+  outline: none;
+  user-select: none;
+}
+.theme-group[open] summary {
+  margin-bottom: 4px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Nature theme — shared chrome overrides for both day and night.   */
+/* ---------------------------------------------------------------- */
+[data-site="nature"] body {
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+
+[data-site="nature"] .window {
+  border-radius: 14px;
+  box-shadow:
+    0 6px 20px rgba(20, 30, 15, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  padding: 0;
+}
+
+[data-site="nature"] .title-bar {
+  border-radius: 13px 13px 0 0;
+  padding: 8px 12px;
+}
+
+[data-site="nature"] .title-bar-text {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: normal;
+  letter-spacing: 0.3px;
+}
+
+[data-site="nature"] .title-bar-controls button {
+  width: 14px;
+  height: 14px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+[data-site="nature"] .title-bar-controls button::before,
+[data-site="nature"] .title-bar-controls button::after {
+  display: none;
+}
+
+[data-site="nature"] .window-body { padding: 16px 18px; }
+
+[data-site="nature"] button {
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-family: Georgia, serif;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  min-width: 70px;
+}
+
+[data-site="nature"] fieldset {
+  border-radius: 10px;
+  padding: 10px 14px 14px;
+}
+[data-site="nature"] legend {
+  background: transparent;
+  font-style: italic;
+  padding: 0 6px;
+}
+
+[data-site="nature"] .status-bar {
+  border-radius: 0 0 13px 13px;
+  padding: 4px 10px;
+}
+[data-site="nature"] .status-bar-field {
+  border: none;
+  font-style: italic;
+}
+
+[data-site="nature"] h1 {
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+
+[data-site="nature"] .theme-group {
+  border-radius: 8px;
+}
+[data-site="nature"] .theme-group summary {
+  font-style: italic;
+  font-weight: normal;
+}
+
+/* ---------------------------------------------------------------- */
+/* Nature — Daytime                                                 */
+/* ---------------------------------------------------------------- */
+[data-site="nature"][data-theme="day"] body {
+  background:
+    radial-gradient(ellipse at 80% 0%, #ffe9a8 0%, transparent 40%),
+    linear-gradient(180deg, #a8d8ef 0%, #c5e3b8 55%, #7ba05b 100%);
+  color: #2d3a1f;
+}
+[data-site="nature"][data-theme="day"] .window {
+  background: #f7f1de;
+  border: 1px solid #5a7a3e;
+}
+[data-site="nature"][data-theme="day"] .title-bar {
+  background: linear-gradient(180deg, #8aaf5e 0%, #5a7a3e 100%);
+  border-bottom: 1px solid #3e5a2a;
+}
+[data-site="nature"][data-theme="day"] .title-bar-text { color: #fffaee; }
+[data-site="nature"][data-theme="day"] .title-bar-controls button {
+  background: #f0e4c8;
+  border: 1px solid #3e5a2a;
+}
+[data-site="nature"][data-theme="day"] button {
+  background: linear-gradient(180deg, #f3ecd2, #e0d4a8);
+  border: 1px solid #5a7a3e;
+  color: #2d3a1f;
+}
+[data-site="nature"][data-theme="day"] button:hover {
+  background: linear-gradient(180deg, #f8f1d8, #e8dcb0);
+}
+[data-site="nature"][data-theme="day"] fieldset {
+  border: 1px solid #8aaf5e;
+  background: rgba(255, 255, 255, 0.35);
+}
+[data-site="nature"][data-theme="day"] legend { color: #3e5a2a; }
+[data-site="nature"][data-theme="day"] .status-bar {
+  background: rgba(90, 122, 62, 0.12);
+  border-top: 1px solid #8aaf5e;
+}
+[data-site="nature"][data-theme="day"] .status-bar-field { color: #3e5a2a; }
+[data-site="nature"][data-theme="day"] h1 { color: #3e5a2a; }
+[data-site="nature"][data-theme="day"] .theme-group {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid #8aaf5e;
+  color: #3e5a2a;
+}
+[data-site="nature"][data-theme="day"] input[type="radio"] { accent-color: #5a7a3e; }
+
+/* ---------------------------------------------------------------- */
+/* Nature — Nighttime                                               */
+/* ---------------------------------------------------------------- */
+[data-site="nature"][data-theme="night"] body {
+  background:
+    radial-gradient(circle at 82% 14%, rgba(245, 240, 210, 0.55) 0%, rgba(245, 240, 210, 0.15) 4%, transparent 12%),
+    radial-gradient(ellipse at 80% 10%, rgba(180, 200, 230, 0.18) 0%, transparent 40%),
+    linear-gradient(180deg, #07111f 0%, #122236 45%, #0f2418 100%);
+  color: #e6dfc4;
+}
+[data-site="nature"][data-theme="night"] .window {
+  background: #1f2a22;
+  border: 1px solid #2a4226;
+  color: #e6dfc4;
+}
+[data-site="nature"][data-theme="night"] .title-bar {
+  background: linear-gradient(180deg, #2a4226 0%, #11200f 100%);
+  border-bottom: 1px solid #0a1709;
+}
+[data-site="nature"][data-theme="night"] .title-bar-text { color: #e6dfc4; }
+[data-site="nature"][data-theme="night"] .title-bar-controls button {
+  background: #3e5a2a;
+  border: 1px solid #0a1709;
+}
+[data-site="nature"][data-theme="night"] .window-body,
+[data-site="nature"][data-theme="night"] .window-body p { color: #e6dfc4; }
+[data-site="nature"][data-theme="night"] button {
+  background: linear-gradient(180deg, #3a4a32, #243018);
+  border: 1px solid #0a1709;
+  color: #e6dfc4;
+}
+[data-site="nature"][data-theme="night"] button:hover {
+  background: linear-gradient(180deg, #4a5a42, #344028);
+}
+[data-site="nature"][data-theme="night"] fieldset {
+  border: 1px solid #3e5a2a;
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-site="nature"][data-theme="night"] legend { color: #b8cba0; }
+[data-site="nature"][data-theme="night"] .status-bar {
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid #2a4226;
+}
+[data-site="nature"][data-theme="night"] .status-bar-field { color: #b8cba0; }
+[data-site="nature"][data-theme="night"] h1 { color: #d8e8c0; }
+[data-site="nature"][data-theme="night"] .theme-group {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid #2a4226;
+  color: #e6dfc4;
+}
+[data-site="nature"][data-theme="night"] .theme-group summary { color: #d8e8c0; }
+[data-site="nature"][data-theme="night"] label,
+[data-site="nature"][data-theme="night"] legend { color: #d8e8c0; }
+[data-site="nature"][data-theme="night"] input[type="radio"] { accent-color: #8aaf5e; }

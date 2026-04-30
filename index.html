@@ -4,12 +4,396 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="left-stack">
+    <aside id="portfolio-sidebar" class="window left-sidebar">
+      <div class="title-bar">
+        <div class="title-bar-text">Portfolio</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <fieldset>
+          <legend>Projects</legend>
+          <ul class="sidebar-list">
+            <li><a href="#">my-site</a> — this thing</li>
+            <li>More coming soon…</li>
+          </ul>
+        </fieldset>
+      </div>
+    </aside>
+
+    <aside id="obsessions-sidebar" class="window left-sidebar">
+      <div class="title-bar">
+        <div class="title-bar-text">Obsessions</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <fieldset>
+          <legend>Currently Into</legend>
+          <ul class="sidebar-list">
+            <li>Pixel art</li>
+            <li>Slow mornings</li>
+          </ul>
+        </fieldset>
+      </div>
+    </aside>
+
+    <aside id="appearance-sidebar" class="window left-sidebar">
+      <div class="title-bar">
+        <div class="title-bar-text">Site Appearance</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <fieldset>
+          <legend>Style</legend>
+          <div class="field-row"><input type="radio" id="s-98"     name="site" value="98"><label for="s-98">Windows 98</label></div>
+          <div class="field-row"><input type="radio" id="s-nature" name="site" value="nature"><label for="s-nature">Nature</label></div>
+        </fieldset>
+
+        <details id="themes-98" class="theme-group">
+          <summary>Windows 98 Themes</summary>
+          <div class="field-row"><input type="radio" id="t-classic"  name="theme" value="classic"  data-style="98"><label for="t-classic">Classic</label></div>
+          <div class="field-row"><input type="radio" id="t-rainy"    name="theme" value="rainy"    data-style="98"><label for="t-rainy">Rainy Day</label></div>
+          <div class="field-row"><input type="radio" id="t-desert"   name="theme" value="desert"   data-style="98"><label for="t-desert">Desert</label></div>
+          <div class="field-row"><input type="radio" id="t-eggplant" name="theme" value="eggplant" data-style="98"><label for="t-eggplant">Eggplant</label></div>
+          <div class="field-row"><input type="radio" id="t-storm"    name="theme" value="storm"    data-style="98"><label for="t-storm">Storm</label></div>
+          <div class="field-row"><input type="radio" id="t-rose"     name="theme" value="rose"     data-style="98"><label for="t-rose">Rose</label></div>
+          <div class="field-row"><input type="radio" id="t-matrix"   name="theme" value="matrix"   data-style="98"><label for="t-matrix">Matrix</label></div>
+        </details>
+
+        <details id="themes-nature" class="theme-group">
+          <summary>Nature Themes</summary>
+          <div class="field-row"><input type="radio" id="t-day"   name="theme" value="day"   data-style="nature"><label for="t-day">Daytime</label></div>
+          <div class="field-row"><input type="radio" id="t-night" name="theme" value="night" data-style="nature"><label for="t-night">Nighttime</label></div>
+        </details>
+      </div>
+    </aside>
+  </div>
+
+  <canvas id="draw-canvas-static"></canvas>
+  <canvas id="draw-canvas-dynamic"></canvas>
+
+  <aside id="activities-sidebar" class="window">
+    <div class="title-bar">
+      <div class="title-bar-text">Activities</div>
+      <div class="title-bar-controls">
+        <button id="activities-toggle" aria-label="Minimize"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <fieldset>
+        <legend>Drawing</legend>
+        <div class="field-row">
+          <input type="checkbox" id="draw-enabled">
+          <label for="draw-enabled">Click &amp; drag to draw</label>
+        </div>
+        <div class="field-row" style="margin-top: 4px;">
+          <input type="checkbox" id="draw-dynamic" checked>
+          <label for="draw-dynamic">Dynamic color (adapts to background)</label>
+        </div>
+        <div class="field-row" style="margin-top: 6px; gap: 6px;">
+          <label for="draw-color">Color:</label>
+          <input type="color" id="draw-color" value="#1a1a1a">
+        </div>
+        <section class="field-row" style="margin-top: 10px; gap: 6px; flex-wrap: wrap;">
+          <button id="undo-last">Undo last line</button>
+          <button id="undo-all">Clear all</button>
+        </section>
+      </fieldset>
+    </div>
+  </aside>
+  <button id="activities-handle" title="Show activities">« Activities</button>
+
   <main>
-    <h1>my-site</h1>
-    <p>This is the start of my GitHub Pages site.</p>
+    <div id="main-window" class="window" style="width: 480px;">
+      <div class="title-bar">
+        <div class="title-bar-text">my-site.exe</div>
+        <div class="title-bar-controls">
+          <button id="main-minimize" aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button id="main-close" aria-label="Close"></button>
+        </div>
+      </div>
+
+      <div class="window-body">
+        <h1>Welcome to my-site</h1>
+        <p>This is the start of my GitHub Pages site.</p>
+
+        <fieldset>
+          <legend>About</legend>
+          <p>hey hey hey what's going on welcome to the future</p>
+        </fieldset>
+
+        <section class="field-row" style="justify-content: flex-end; margin-top: 12px;">
+          <button>OK</button>
+          <button>Cancel</button>
+        </section>
+      </div>
+
+      <div class="status-bar">
+        <p class="status-bar-field">Ready</p>
+        <p class="status-bar-field">Powered by GitHub Pages</p>
+        <p class="status-bar-field" id="cpu-usage">CPU Usage: 0%</p>
+      </div>
+    </div>
   </main>
+
+  <button id="main-reopen" title="Restore my-site.exe" hidden>my-site.exe</button>
+
+  <script>
+    (function () {
+      const el = document.getElementById('cpu-usage');
+      const EXPECTED = 100;
+      let last = performance.now();
+      let smoothed = 0;
+      function tick() {
+        const now = performance.now();
+        const lag = Math.max(0, now - last - EXPECTED);
+        last = now;
+        const target = Math.min(99, (lag / EXPECTED) * 100);
+        smoothed = smoothed * 0.7 + target * 0.3;
+        el.textContent = 'CPU Usage: ' + Math.round(smoothed) + '%';
+        setTimeout(tick, EXPECTED);
+      }
+      setTimeout(tick, EXPECTED);
+    })();
+
+    (function () {
+      document.querySelectorAll('.left-sidebar').forEach((win) => {
+        const titleBar = win.querySelector('.title-bar');
+        const minBtn   = win.querySelector('.title-bar-controls button');
+        const key      = win.id + '-minimized';
+
+        const stored = localStorage.getItem(key);
+        const minimized = stored === null ? true : stored === '1';
+        win.classList.toggle('minimized', minimized);
+
+        function set(v) {
+          win.classList.toggle('minimized', v);
+          localStorage.setItem(key, v ? '1' : '0');
+        }
+        function toggle() { set(!win.classList.contains('minimized')); }
+
+        minBtn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+        titleBar.addEventListener('click', (e) => {
+          if (e.target.closest('.title-bar-controls')) return;
+          toggle();
+        });
+      });
+    })();
+
+    (function () {
+      const DEFAULT_THEME = { '98': 'classic', 'nature': 'day' };
+
+      function applySite(v)  { document.documentElement.setAttribute('data-site',  v); localStorage.setItem('site',  v); }
+      function applyTheme(v) { document.documentElement.setAttribute('data-theme', v); localStorage.setItem('theme', v); }
+
+      function checkRadio(name, value) {
+        const el = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+        if (el) el.checked = true;
+      }
+
+      function openGroupFor(site) {
+        document.getElementById('themes-98').open      = (site === '98');
+        document.getElementById('themes-nature').open  = (site === 'nature');
+      }
+
+      let site  = localStorage.getItem('site')  || '98';
+      let theme = localStorage.getItem('theme') || DEFAULT_THEME[site];
+      applySite(site);
+      applyTheme(theme);
+      checkRadio('site', site);
+      checkRadio('theme', theme);
+      openGroupFor(site);
+
+      document.querySelectorAll('input[name="site"]').forEach((r) => {
+        r.addEventListener('change', () => {
+          applySite(r.value);
+          const t = DEFAULT_THEME[r.value];
+          applyTheme(t);
+          checkRadio('theme', t);
+          openGroupFor(r.value);
+        });
+      });
+
+      document.querySelectorAll('input[name="theme"]').forEach((r) => {
+        r.addEventListener('change', () => {
+          const style = r.dataset.style;
+          applySite(style);
+          applyTheme(r.value);
+          checkRadio('site', style);
+          openGroupFor(style);
+        });
+      });
+    })();
+
+    (function () {
+      const sidebar = document.getElementById('activities-sidebar');
+      const toggle  = document.getElementById('activities-toggle');
+      const handle  = document.getElementById('activities-handle');
+
+      const collapsed = localStorage.getItem('activities-collapsed') !== '0';
+      if (collapsed) sidebar.classList.add('collapsed');
+
+      function setCollapsed(v) {
+        sidebar.classList.toggle('collapsed', v);
+        localStorage.setItem('activities-collapsed', v ? '1' : '0');
+      }
+      toggle.addEventListener('click', () => setCollapsed(true));
+      handle.addEventListener('click', () => setCollapsed(false));
+    })();
+
+    (function () {
+      const staticCanvas  = document.getElementById('draw-canvas-static');
+      const dynamicCanvas = document.getElementById('draw-canvas-dynamic');
+      const sCtx = staticCanvas.getContext('2d');
+      const dCtx = dynamicCanvas.getContext('2d');
+      const enableEl   = document.getElementById('draw-enabled');
+      const dynamicEl  = document.getElementById('draw-dynamic');
+      const colorEl    = document.getElementById('draw-color');
+      const undoLastEl = document.getElementById('undo-last');
+      const undoAllEl  = document.getElementById('undo-all');
+
+      const DYNAMIC_COLOR = '#ffffff';
+      const LINE_WIDTH    = 1.25;
+
+      function syncColorPickerEnabled() {
+        colorEl.disabled = dynamicEl.checked;
+        if (colorEl.disabled) {
+          colorEl.title = 'Must disable dynamic color to use the color selector';
+        } else {
+          colorEl.removeAttribute('title');
+        }
+      }
+      dynamicEl.addEventListener('change', syncColorPickerEnabled);
+      syncColorPickerEnabled();
+
+      let lines   = [];
+      let drawing = false;
+      let current = null;
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        for (const c of [staticCanvas, dynamicCanvas]) {
+          c.width  = Math.floor(window.innerWidth  * dpr);
+          c.height = Math.floor(window.innerHeight * dpr);
+          c.style.width  = window.innerWidth  + 'px';
+          c.style.height = window.innerHeight + 'px';
+          c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        redraw();
+      }
+
+      function clearCanvases() {
+        sCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        dCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+
+      function ctxFor(line) { return line.mode === 'dynamic' ? dCtx : sCtx; }
+
+      function redraw() {
+        clearCanvases();
+        for (const line of lines) drawLine(line);
+      }
+
+      function drawLine(line) {
+        if (line.points.length === 0) return;
+        const ctx = ctxFor(line);
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth   = line.width;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+        ctx.beginPath();
+        ctx.moveTo(line.points[0].x, line.points[0].y);
+        if (line.points.length === 1) {
+          ctx.lineTo(line.points[0].x + 0.01, line.points[0].y + 0.01);
+        } else {
+          for (let i = 1; i < line.points.length; i++) {
+            ctx.lineTo(line.points[i].x, line.points[i].y);
+          }
+        }
+        ctx.stroke();
+      }
+
+      function setEnabled(v) {
+        dynamicCanvas.classList.toggle('active', v);
+        enableEl.checked = v;
+      }
+
+      enableEl.addEventListener('change', () => setEnabled(enableEl.checked));
+      undoLastEl.addEventListener('click', () => { lines.pop(); redraw(); });
+      undoAllEl.addEventListener('click',  () => { lines = []; redraw(); });
+
+      dynamicCanvas.addEventListener('pointerdown', (e) => {
+        drawing = true;
+        dynamicCanvas.setPointerCapture(e.pointerId);
+        const mode = dynamicEl.checked ? 'dynamic' : 'static';
+        const color = mode === 'dynamic' ? DYNAMIC_COLOR : colorEl.value;
+        current = { points: [{ x: e.clientX, y: e.clientY }], color, width: LINE_WIDTH, mode };
+        lines.push(current);
+      });
+      dynamicCanvas.addEventListener('pointermove', (e) => {
+        if (!drawing || !current) return;
+        const pts = current.points;
+        const a = pts[pts.length - 1];
+        const b = { x: e.clientX, y: e.clientY };
+        pts.push(b);
+        const ctx = ctxFor(current);
+        ctx.strokeStyle = current.color;
+        ctx.lineWidth   = current.width;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      });
+      function endStroke() { drawing = false; current = null; }
+      dynamicCanvas.addEventListener('pointerup',     endStroke);
+      dynamicCanvas.addEventListener('pointercancel', endStroke);
+
+      window.addEventListener('resize', resize);
+      resize();
+    })();
+
+    (function () {
+      const win      = document.getElementById('main-window');
+      const titleBar = win.querySelector('.title-bar');
+      const minBtn   = document.getElementById('main-minimize');
+      const closeBtn = document.getElementById('main-close');
+      const reopen   = document.getElementById('main-reopen');
+
+      minBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        win.classList.toggle('minimized');
+      });
+
+      titleBar.addEventListener('click', (e) => {
+        if (e.target.closest('.title-bar-controls')) return;
+        win.classList.remove('minimized');
+      });
+
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        win.classList.add('closed');
+        win.classList.remove('minimized');
+        reopen.hidden = false;
+      });
+
+      reopen.addEventListener('click', () => {
+        win.classList.remove('closed');
+        reopen.hidden = true;
+      });
+    })();
+  </script>
 </body>
 </html>
