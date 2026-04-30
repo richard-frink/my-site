@@ -443,47 +443,36 @@ h1 {
 /* ---------------------------------------------------------------- */
 @media (max-width: 768px) {
   body {
-    display: block;
-    padding: 8px;
+    padding: 4px;
   }
 
+  /* Sidebars stay pinned to the sides like on desktop, just narrower. */
   #left-stack {
-    position: relative;
-    z-index: 20;
-    width: auto;
-    min-width: 0;
-    max-width: none;
-    max-height: none;
-    margin-bottom: 8px;
-    overflow: visible;
+    width: 145px;
+    min-width: 100px;
+    max-width: 60vw;
+    top: 8px;
+    left: 8px;
+    max-height: calc(100vh - 16px);
     resize: none;
   }
 
   #activities-sidebar {
-    position: relative;
-    z-index: 20;
-    width: auto;
-    min-width: 0;
-    max-width: none;
-    max-height: none;
-    margin-bottom: 8px;
-    overflow: visible;
+    width: 145px;
+    min-width: 100px;
+    max-width: 60vw;
+    top: 8px;
+    right: 8px;
+    max-height: calc(100vh - 16px);
     resize: none;
-    transform: none !important;
-    transition: none;
   }
 
-  main { position: relative; z-index: 20; }
-  #activities-sidebar.collapsed { transform: none !important; }
-  #activities-sidebar.collapsed .window-body { display: none; }
-  #activities-sidebar .title-bar { cursor: pointer; }
-  #activities-handle { display: none !important; }
-
+  /* Main window fills the gap between the side panels. */
   main { width: 100%; }
   #main-window {
     width: auto !important;
-    max-width: 100%;
-    margin-bottom: 8px;
+    max-width: calc(100vw - 16px);
+    margin: 0 auto;
   }
 
   #main-reopen {
@@ -493,7 +482,8 @@ h1 {
   }
 
   /* Sidebar fieldsets get a little tighter on small screens */
-  fieldset { padding: 6px 10px 10px; }
+  fieldset { padding: 6px 8px 8px; }
+  .sidebar-list { padding-left: 14px; }
 
   /* Avoid horizontal overflow from long URLs in link text */
   .sidebar-list a { word-break: break-word; }
