@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260430-4">
+  <link rel="stylesheet" href="style.css?v=20260501-3">
 </head>
 <body>
   <div id="left-stack">
@@ -224,6 +224,31 @@
   <button id="main-reopen" title="Restore welcome.exe" hidden>welcome.exe</button>
 
   <script>
+    const SidebarCoord = {
+      closeMain() {
+        const w = document.getElementById('main-window');
+        const reopen = document.getElementById('main-reopen');
+        if (!w.classList.contains('closed')) {
+          w.classList.add('closed');
+          w.classList.remove('minimized');
+          if (reopen) reopen.hidden = false;
+        }
+      },
+      collapseAllSidebars() {
+        document.querySelectorAll('.left-sidebar').forEach((win) => {
+          if (!win.classList.contains('minimized')) {
+            win.classList.add('minimized');
+            localStorage.setItem(win.id + '-minimized', '1');
+          }
+        });
+        const acts = document.getElementById('activities-sidebar');
+        if (!acts.classList.contains('collapsed')) {
+          acts.classList.add('collapsed');
+          localStorage.setItem('activities-collapsed', '1');
+        }
+      },
+    };
+
     (function () {
       const el = document.getElementById('cpu-usage');
       const EXPECTED = 100;
@@ -285,6 +310,7 @@
         function set(v) {
           win.classList.toggle('minimized', v);
           localStorage.setItem(key, v ? '1' : '0');
+          if (!v) SidebarCoord.closeMain();
         }
         function toggle() { set(!win.classList.contains('minimized')); }
 
@@ -353,6 +379,7 @@
       function setCollapsed(v) {
         sidebar.classList.toggle('collapsed', v);
         localStorage.setItem('activities-collapsed', v ? '1' : '0');
+        if (!v) SidebarCoord.closeMain();
       }
       function toggleCollapsed() {
         setCollapsed(!sidebar.classList.contains('collapsed'));
@@ -594,12 +621,17 @@
 
       minBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        const wasMinimized = win.classList.contains('minimized');
         win.classList.toggle('minimized');
+        if (wasMinimized) SidebarCoord.collapseAllSidebars();
       });
 
       titleBar.addEventListener('click', (e) => {
         if (e.target.closest('.title-bar-controls')) return;
-        win.classList.remove('minimized');
+        if (win.classList.contains('minimized')) {
+          win.classList.remove('minimized');
+          SidebarCoord.collapseAllSidebars();
+        }
       });
 
       closeBtn.addEventListener('click', (e) => {
@@ -612,6 +644,7 @@
       reopen.addEventListener('click', () => {
         win.classList.remove('closed');
         reopen.hidden = true;
+        SidebarCoord.collapseAllSidebars();
       });
     })();
   </script>
