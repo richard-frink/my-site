@@ -550,12 +550,12 @@ body.ball-active #main-reopen { cursor: auto; }
     padding: 4px;
   }
 
-  /* Sidebars stay pinned to the sides like on desktop, just narrower.
-     They start below the name banner so it doesn't overlap. */
+  /* On mobile only one sidebar is open at a time, so each gets most of
+     the viewport width when expanded. They sit below the name banner. */
   #left-stack {
-    width: 145px;
-    min-width: 100px;
-    max-width: 60vw;
+    width: 88vw;
+    min-width: 0;
+    max-width: 88vw;
     top: 44px;
     left: 8px;
     max-height: calc(100vh - 52px);
@@ -563,15 +563,21 @@ body.ball-active #main-reopen { cursor: auto; }
   }
 
   #activities-sidebar {
-    width: 145px;
-    min-width: 100px;
-    max-width: 60vw;
+    width: 88vw;
+    min-width: 0;
+    max-width: 88vw;
     top: 44px;
     right: 8px;
     max-height: calc(100vh - 52px);
     resize: none;
   }
   #activities-handle { top: 44px; }
+
+  /* Slightly larger sidebar typography so options are readable on phones. */
+  #left-stack .window-body,
+  #activities-sidebar .window-body { font-size: 14px; }
+  #left-stack .sidebar-list li,
+  #activities-sidebar label { line-height: 1.4; }
   #activities-resize-handle { display: none; }
 
   /* Main window fills the gap between the side panels. */

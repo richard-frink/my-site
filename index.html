@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260501-12">
+  <link rel="stylesheet" href="style.css?v=20260501-13">
 </head>
 <body>
   <div id="left-stack">
@@ -286,6 +286,9 @@
 
   <script>
     const SidebarCoord = {
+      isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+      },
       closeMain() {
         const w = document.getElementById('main-window');
         const reopen = document.getElementById('main-reopen');
@@ -306,6 +309,22 @@
         if (!acts.classList.contains('collapsed')) {
           acts.classList.add('collapsed');
           localStorage.setItem('activities-collapsed', '1');
+        }
+      },
+      collapseOthers(exceptId) {
+        document.querySelectorAll('.left-sidebar').forEach((win) => {
+          if (win.id === exceptId) return;
+          if (!win.classList.contains('minimized')) {
+            win.classList.add('minimized');
+            localStorage.setItem(win.id + '-minimized', '1');
+          }
+        });
+        if (exceptId !== 'activities-sidebar') {
+          const acts = document.getElementById('activities-sidebar');
+          if (!acts.classList.contains('collapsed')) {
+            acts.classList.add('collapsed');
+            localStorage.setItem('activities-collapsed', '1');
+          }
         }
       },
     };
@@ -365,13 +384,16 @@
         const key      = win.id + '-minimized';
 
         const stored = localStorage.getItem(key);
-        const minimized = stored === null ? true : stored === '1';
+        const minimized = SidebarCoord.isMobile() ? true : (stored === null ? true : stored === '1');
         win.classList.toggle('minimized', minimized);
 
         function set(v) {
           win.classList.toggle('minimized', v);
           localStorage.setItem(key, v ? '1' : '0');
-          if (!v) SidebarCoord.closeMain();
+          if (!v) {
+            SidebarCoord.closeMain();
+            if (SidebarCoord.isMobile()) SidebarCoord.collapseOthers(win.id);
+          }
         }
         function toggle() { set(!win.classList.contains('minimized')); }
 
@@ -434,13 +456,18 @@
       const handle   = document.getElementById('activities-handle');
       const titleBar = sidebar.querySelector('.title-bar');
 
-      const collapsed = localStorage.getItem('activities-collapsed') !== '0';
+      const collapsed = SidebarCoord.isMobile()
+        ? true
+        : (localStorage.getItem('activities-collapsed') !== '0');
       if (collapsed) sidebar.classList.add('collapsed');
 
       function setCollapsed(v) {
         sidebar.classList.toggle('collapsed', v);
         localStorage.setItem('activities-collapsed', v ? '1' : '0');
-        if (!v) SidebarCoord.closeMain();
+        if (!v) {
+          SidebarCoord.closeMain();
+          if (SidebarCoord.isMobile()) SidebarCoord.collapseOthers('activities-sidebar');
+        }
       }
       function toggleCollapsed() {
         setCollapsed(!sidebar.classList.contains('collapsed'));
