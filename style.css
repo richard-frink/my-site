@@ -64,8 +64,35 @@ h1 {
   z-index: 10;
   transition: transform 0.25s ease;
   max-height: calc(100vh - 32px);
-  overflow: auto;
-  resize: horizontal;
+}
+
+#activities-resize-handle {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 11;
+  touch-action: none;
+}
+#activities-resize-handle::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+#activities-resize-handle:hover::before,
+#activities-resize-handle.dragging::before {
+  background: rgba(0, 0, 0, 0.25);
+}
+[data-site="nature"] #activities-resize-handle:hover::before,
+[data-site="nature"] #activities-resize-handle.dragging::before {
+  background: rgba(255, 255, 255, 0.35);
 }
 #activities-sidebar.collapsed {
   transform: translateX(calc(100% + 32px));
@@ -466,6 +493,7 @@ h1 {
     max-height: calc(100vh - 16px);
     resize: none;
   }
+  #activities-resize-handle { display: none; }
 
   /* Main window fills the gap between the side panels. */
   main { width: 100%; }

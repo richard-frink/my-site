@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260430-3">
+  <link rel="stylesheet" href="style.css?v=20260430-4">
 </head>
 <body>
   <div id="left-stack">
@@ -152,6 +152,7 @@
   <canvas id="draw-canvas-dynamic"></canvas>
 
   <aside id="activities-sidebar" class="window">
+    <div id="activities-resize-handle" aria-hidden="true"></div>
     <div class="title-bar">
       <div class="title-bar-text">activities</div>
       <div class="title-bar-controls">
@@ -363,6 +364,35 @@
         if (e.target.closest('.title-bar-controls')) return;
         toggleCollapsed();
       });
+
+      const resizeHandle = document.getElementById('activities-resize-handle');
+      const MIN_W = 200;
+      const MAX_W = 520;
+      let drag = null;
+      resizeHandle.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try { resizeHandle.setPointerCapture(e.pointerId); } catch (_) {}
+        resizeHandle.classList.add('dragging');
+        drag = {
+          startX: e.clientX,
+          startWidth: sidebar.getBoundingClientRect().width,
+        };
+      });
+      resizeHandle.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        e.preventDefault();
+        const delta = drag.startX - e.clientX;
+        const w = Math.max(MIN_W, Math.min(MAX_W, drag.startWidth + delta));
+        sidebar.style.width = w + 'px';
+      });
+      function endDrag() {
+        if (!drag) return;
+        drag = null;
+        resizeHandle.classList.remove('dragging');
+      }
+      resizeHandle.addEventListener('pointerup', endDrag);
+      resizeHandle.addEventListener('pointercancel', endDrag);
     })();
 
     (function () {
