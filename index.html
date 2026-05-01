@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260501-3">
+  <link rel="stylesheet" href="style.css?v=20260501-8">
 </head>
 <body>
   <div id="left-stack">
@@ -150,6 +150,10 @@
 
   <canvas id="draw-canvas-static"></canvas>
   <canvas id="draw-canvas-dynamic"></canvas>
+  <canvas id="ball-trail-static"></canvas>
+  <canvas id="ball-trail-dynamic"></canvas>
+  <canvas id="ball-canvas-static"></canvas>
+  <canvas id="ball-canvas-dynamic"></canvas>
 
   <aside id="activities-sidebar" class="window">
     <div id="activities-resize-handle" aria-hidden="true"></div>
@@ -181,6 +185,37 @@
         <section class="field-row" style="margin-top: 10px; gap: 6px; flex-wrap: wrap;">
           <button id="undo-last">Undo last line</button>
           <button id="undo-all">Clear all</button>
+        </section>
+      </fieldset>
+
+      <fieldset>
+        <legend>Ball Launching</legend>
+        <div class="field-row">
+          <input type="checkbox" id="ball-enabled">
+          <label for="ball-enabled">Click &amp; drag to launch balls</label>
+        </div>
+        <div class="field-row" style="margin-top: 4px;">
+          <input type="checkbox" id="ball-dynamic" checked>
+          <label for="ball-dynamic">Dynamic color (adapts to background)</label>
+        </div>
+        <div class="field-row" style="margin-top: 4px;">
+          <input type="checkbox" id="ball-trail">
+          <label for="ball-trail">Leave a line trail wherever the ball touches</label>
+        </div>
+        <div class="field-row" style="margin-top: 4px;">
+          <input type="checkbox" id="ball-autoclear">
+          <label for="ball-autoclear">Auto-clear balls once they stop moving</label>
+        </div>
+        <div class="field-row" style="margin-top: 6px; gap: 6px;">
+          <label for="ball-color">Color:</label>
+          <input type="color" id="ball-color" value="#ff5555">
+        </div>
+        <div class="field-row" style="margin-top: 6px; gap: 6px;">
+          <label for="ball-size">Size:</label>
+          <input type="range" id="ball-size" min="3" max="48" value="8" style="flex: 1; min-width: 80px;">
+        </div>
+        <section class="field-row" style="margin-top: 10px; gap: 6px; flex-wrap: wrap;">
+          <button id="ball-clear">Clear balls &amp; trails</button>
         </section>
       </fieldset>
     </div>
@@ -610,6 +645,322 @@
 
       window.addEventListener('resize', resize);
       resize();
+    })();
+
+    (function () {
+      const trailStaticCanvas  = document.getElementById('ball-trail-static');
+      const trailDynamicCanvas = document.getElementById('ball-trail-dynamic');
+      const ballStaticCanvas   = document.getElementById('ball-canvas-static');
+      const ballDynamicCanvas  = document.getElementById('ball-canvas-dynamic');
+      const tsCtx = trailStaticCanvas.getContext('2d');
+      const tdCtx = trailDynamicCanvas.getContext('2d');
+      const bsCtx = ballStaticCanvas.getContext('2d');
+      const bdCtx = ballDynamicCanvas.getContext('2d');
+      const allCanvases = [trailStaticCanvas, trailDynamicCanvas, ballStaticCanvas, ballDynamicCanvas];
+      const enableEl    = document.getElementById('ball-enabled');
+      const dynamicEl   = document.getElementById('ball-dynamic');
+      const trailEl     = document.getElementById('ball-trail');
+      const autoClearEl = document.getElementById('ball-autoclear');
+      const colorEl     = document.getElementById('ball-color');
+      const sizeEl      = document.getElementById('ball-size');
+      const clearEl     = document.getElementById('ball-clear');
+      const drawEnableEl    = document.getElementById('draw-enabled');
+      const drawDynamicCanvas = document.getElementById('draw-canvas-dynamic');
+
+      const LAUNCH_FACTOR       = 0.22;
+      const MAX_LAUNCH          = 38;
+      const MIN_LAUNCH          = 4;
+      const FRICTION            = 0.998;
+      const RESTITUTION         = 0.86;
+      const MIN_SPEED           = 0.08;
+      const TRAIL_WIDTH         = 1.5;
+      const ARROW_HEAD          = 12;
+      const DYNAMIC_BALL_COLOR  = '#ffffff';
+
+      function trailCtxFor(mode) { return mode === 'dynamic' ? tdCtx : tsCtx; }
+      function ballCtxFor(mode)  { return mode === 'dynamic' ? bdCtx : bsCtx; }
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const w = window.innerWidth, h = window.innerHeight;
+        for (const c of allCanvases) {
+          c.width  = Math.floor(w * dpr);
+          c.height = Math.floor(h * dpr);
+          c.style.width  = w + 'px';
+          c.style.height = h + 'px';
+          c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      let balls = [];
+      let dragStart = null;
+      let dragCurrent = null;
+
+      enableEl.addEventListener('change', () => {
+        document.body.classList.toggle('ball-active', enableEl.checked);
+        if (enableEl.checked && drawEnableEl.checked) {
+          drawEnableEl.checked = false;
+          drawDynamicCanvas.classList.remove('active');
+        }
+      });
+      drawEnableEl.addEventListener('change', () => {
+        if (drawEnableEl.checked && enableEl.checked) {
+          enableEl.checked = false;
+          document.body.classList.remove('ball-active');
+        }
+      });
+      autoClearEl.addEventListener('change', () => {
+        if (autoClearEl.checked) ensureAnim();
+      });
+
+      function syncBallColorPickerEnabled() {
+        colorEl.disabled = dynamicEl.checked;
+        if (colorEl.disabled) {
+          colorEl.title = 'Must disable dynamic color to use the color selector';
+        } else {
+          colorEl.removeAttribute('title');
+        }
+      }
+      dynamicEl.addEventListener('change', syncBallColorPickerEnabled);
+      syncBallColorPickerEnabled();
+
+      function isUITarget(t) {
+        if (!t || !t.closest) return false;
+        return !!t.closest('.window, #left-stack, #activities-handle, #main-reopen');
+      }
+
+      clearEl.addEventListener('click', () => {
+        balls = [];
+        const w = window.innerWidth, h = window.innerHeight;
+        tsCtx.clearRect(0, 0, w, h);
+        tdCtx.clearRect(0, 0, w, h);
+        bsCtx.clearRect(0, 0, w, h);
+        bdCtx.clearRect(0, 0, w, h);
+      });
+
+      function getObstacles() {
+        const rects = [];
+        document.querySelectorAll('.window').forEach((w) => {
+          if (w.classList.contains('closed')) return;
+          const r = w.getBoundingClientRect();
+          if (r.width <= 0 || r.height <= 0) return;
+          rects.push({ x: r.left, y: r.top, w: r.width, h: r.height });
+        });
+        return rects;
+      }
+
+      function collideRect(ball, rect) {
+        const cx = Math.max(rect.x, Math.min(ball.x, rect.x + rect.w));
+        const cy = Math.max(rect.y, Math.min(ball.y, rect.y + rect.h));
+        const dx = ball.x - cx;
+        const dy = ball.y - cy;
+        const r  = ball.radius;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= r * r) return false;
+
+        let nx, ny, dist;
+        if (d2 > 1e-6) {
+          dist = Math.sqrt(d2);
+          nx = dx / dist;
+          ny = dy / dist;
+        } else {
+          const dl = ball.x - rect.x;
+          const dR = (rect.x + rect.w) - ball.x;
+          const dt = ball.y - rect.y;
+          const db = (rect.y + rect.h) - ball.y;
+          const m = Math.min(dl, dR, dt, db);
+          if      (m === dl) { nx = -1; ny =  0; dist = -dl; }
+          else if (m === dR) { nx =  1; ny =  0; dist = -dR; }
+          else if (m === dt) { nx =  0; ny = -1; dist = -dt; }
+          else               { nx =  0; ny =  1; dist = -db; }
+        }
+
+        ball.x += nx * (r - dist);
+        ball.y += ny * (r - dist);
+        const vDotN = ball.vx * nx + ball.vy * ny;
+        if (vDotN < 0) {
+          ball.vx = (ball.vx - 2 * vDotN * nx) * RESTITUTION;
+          ball.vy = (ball.vy - 2 * vDotN * ny) * RESTITUTION;
+        }
+        return true;
+      }
+
+      function step(ball, obstacles) {
+        const speed = Math.hypot(ball.vx, ball.vy);
+        const sub = Math.max(1, Math.ceil(speed / (ball.radius * 0.8)));
+        const r = ball.radius;
+        const W = window.innerWidth, H = window.innerHeight;
+
+        for (let i = 0; i < sub; i++) {
+          const prevX = ball.x, prevY = ball.y;
+          ball.x += ball.vx / sub;
+          ball.y += ball.vy / sub;
+
+          if (ball.x - r < 0)        { ball.x = r;       ball.vx = -ball.vx * RESTITUTION; }
+          else if (ball.x + r > W)   { ball.x = W - r;   ball.vx = -ball.vx * RESTITUTION; }
+          if (ball.y - r < 0)        { ball.y = r;       ball.vy = -ball.vy * RESTITUTION; }
+          else if (ball.y + r > H)   { ball.y = H - r;   ball.vy = -ball.vy * RESTITUTION; }
+
+          for (const o of obstacles) collideRect(ball, o);
+
+          if (ball.trail) {
+            const tCtx = trailCtxFor(ball.mode);
+            tCtx.strokeStyle = ball.color;
+            tCtx.lineWidth   = TRAIL_WIDTH;
+            tCtx.lineCap     = 'round';
+            tCtx.beginPath();
+            tCtx.moveTo(prevX, prevY);
+            tCtx.lineTo(ball.x, ball.y);
+            tCtx.stroke();
+          }
+        }
+        ball.vx *= FRICTION;
+        ball.vy *= FRICTION;
+        return Math.hypot(ball.vx, ball.vy) > MIN_SPEED;
+      }
+
+      function drawArrow(from, to, color, mode, radius) {
+        const ctx = ballCtxFor(mode);
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(from.x, from.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        const dx = to.x - from.x, dy = to.y - from.y;
+        const len = Math.hypot(dx, dy);
+        if (len >= 4) {
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+          const ux = dx / len, uy = dy / len;
+          const px = -uy, py = ux;
+          const ah = Math.min(ARROW_HEAD, len * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(to.x, to.y);
+          ctx.lineTo(to.x - ux * ah + px * ah * 0.5, to.y - uy * ah + py * ah * 0.5);
+          ctx.lineTo(to.x - ux * ah - px * ah * 0.5, to.y - uy * ah - py * ah * 0.5);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      let animRunning = false;
+      function ensureAnim() {
+        if (animRunning) return;
+        animRunning = true;
+        function frame() {
+          const W = window.innerWidth, H = window.innerHeight;
+          bsCtx.clearRect(0, 0, W, H);
+          bdCtx.clearRect(0, 0, W, H);
+          const obstacles = getObstacles();
+          let anyMoving = false;
+          for (const b of balls) {
+            if (Math.hypot(b.vx, b.vy) > MIN_SPEED) {
+              if (step(b, obstacles)) anyMoving = true;
+            }
+          }
+          if (autoClearEl.checked) {
+            balls = balls.filter((b) => Math.hypot(b.vx, b.vy) > MIN_SPEED);
+          }
+          for (const b of balls) {
+            const ctx = ballCtxFor(b.mode);
+            ctx.fillStyle = b.color;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          if (dragStart && dragCurrent) {
+            const mode = dynamicEl.checked ? 'dynamic' : 'static';
+            const color = mode === 'dynamic' ? DYNAMIC_BALL_COLOR : colorEl.value;
+            const aimTo = {
+              x: dragStart.x - (dragCurrent.x - dragStart.x),
+              y: dragStart.y - (dragCurrent.y - dragStart.y),
+            };
+            drawArrow(dragStart, aimTo, color, mode, sizeEl.valueAsNumber);
+          }
+          if (anyMoving || (dragStart && dragCurrent)) {
+            requestAnimationFrame(frame);
+          } else {
+            animRunning = false;
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      let dragPointerId = null;
+      let suppressClickUntil = 0;
+
+      window.addEventListener('pointerdown', (e) => {
+        if (!enableEl.checked) return;
+        if (isUITarget(e.target)) return;
+        if (dragStart) return;
+        try { document.body.setPointerCapture(e.pointerId); } catch (_) {}
+        dragStart     = { x: e.clientX, y: e.clientY };
+        dragCurrent   = { x: e.clientX, y: e.clientY };
+        dragPointerId = e.pointerId;
+        e.preventDefault();
+        ensureAnim();
+      });
+      window.addEventListener('pointermove', (e) => {
+        if (!dragStart || e.pointerId !== dragPointerId) return;
+        dragCurrent = { x: e.clientX, y: e.clientY };
+        ensureAnim();
+      });
+      function endDrag(e) {
+        if (!dragStart || (e && e.pointerId !== dragPointerId)) return;
+        if (dragCurrent) {
+          const dx = dragCurrent.x - dragStart.x;
+          const dy = dragCurrent.y - dragStart.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist >= 4) {
+            const speed = Math.min(MAX_LAUNCH, Math.max(MIN_LAUNCH, dist * LAUNCH_FACTOR));
+            const ux = -dx / dist, uy = -dy / dist;
+            const mode = dynamicEl.checked ? 'dynamic' : 'static';
+            const color = mode === 'dynamic' ? DYNAMIC_BALL_COLOR : colorEl.value;
+            balls.push({
+              x: dragStart.x,
+              y: dragStart.y,
+              vx: ux * speed,
+              vy: uy * speed,
+              radius: sizeEl.valueAsNumber,
+              color,
+              mode,
+              trail: trailEl.checked,
+            });
+            suppressClickUntil = performance.now() + 250;
+          }
+        }
+        dragStart = null;
+        dragCurrent = null;
+        dragPointerId = null;
+        ensureAnim();
+      }
+      window.addEventListener('pointerup',     endDrag);
+      window.addEventListener('pointercancel', endDrag);
+      window.addEventListener('click', (e) => {
+        if (performance.now() < suppressClickUntil) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }, true);
+      window.addEventListener('touchstart', (e) => {
+        if (!enableEl.checked) return;
+        if (e.touches.length !== 1) return;
+        if (isUITarget(e.target)) return;
+        e.preventDefault();
+      }, { passive: false });
+      window.addEventListener('touchmove', (e) => {
+        if (!enableEl.checked || !dragStart) return;
+        if (e.touches.length !== 1) return;
+        e.preventDefault();
+      }, { passive: false });
     })();
 
     (function () {

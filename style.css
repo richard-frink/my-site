@@ -119,6 +119,24 @@ h1 {
 #draw-canvas-dynamic { z-index: 6; mix-blend-mode: difference; }
 #draw-canvas-dynamic.active { pointer-events: auto; }
 
+#ball-trail-static,
+#ball-trail-dynamic,
+#ball-canvas-static,
+#ball-canvas-dynamic {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+#ball-trail-static    { z-index: 19; }
+#ball-trail-dynamic   { z-index: 19; mix-blend-mode: difference; }
+#ball-canvas-static   { z-index: 20; }
+#ball-canvas-dynamic  { z-index: 20; mix-blend-mode: difference; }
+body.ball-active   { cursor: crosshair; }
+body.ball-active .window,
+body.ball-active #left-stack,
+body.ball-active #activities-handle,
+body.ball-active #main-reopen { cursor: auto; }
+
 .window.minimized .window-body,
 .window.minimized .status-bar {
   display: none;
