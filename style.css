@@ -550,14 +550,15 @@ body.ball-active #main-reopen { cursor: auto; }
     padding: 4px;
   }
 
-  /* Sidebars stay pinned to the sides like on desktop, just narrower. */
+  /* Sidebars stay pinned to the sides like on desktop, just narrower.
+     They start below the name banner so it doesn't overlap. */
   #left-stack {
     width: 145px;
     min-width: 100px;
     max-width: 60vw;
-    top: 8px;
+    top: 44px;
     left: 8px;
-    max-height: calc(100vh - 16px);
+    max-height: calc(100vh - 52px);
     resize: none;
   }
 
@@ -565,11 +566,12 @@ body.ball-active #main-reopen { cursor: auto; }
     width: 145px;
     min-width: 100px;
     max-width: 60vw;
-    top: 8px;
+    top: 44px;
     right: 8px;
-    max-height: calc(100vh - 16px);
+    max-height: calc(100vh - 52px);
     resize: none;
   }
+  #activities-handle { top: 44px; }
   #activities-resize-handle { display: none; }
 
   /* Main window fills the gap between the side panels. */
