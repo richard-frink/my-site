@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260501-8">
+  <link rel="stylesheet" href="style.css?v=20260501-11">
 </head>
 <body>
   <div id="left-stack">
@@ -17,6 +17,15 @@
         </div>
       </div>
       <div class="window-body">
+        <fieldset>
+          <legend>contact</legend>
+          <ul class="sidebar-list">
+            <li>Richard Frink</li>
+            <li><a href="mailto:richard.frink35@gmail.com">richard.frink35@gmail.com</a></li>
+            <li>discord: rfrink</li>
+          </ul>
+        </fieldset>
+        
         <fieldset>
           <legend>career</legend>
           <ul class="sidebar-list">
@@ -59,6 +68,7 @@
         </div>
       </div>
       <div class="window-body">
+        <p class="panel-subtitle">maybe not all current obsessions, but all stuff i really like</p>
         <fieldset>
           <legend>music</legend>
           <ul class="sidebar-list">
@@ -148,6 +158,22 @@
     </aside>
   </div>
 
+  <div id="name-display" aria-label="Richard Frink">
+    <span class="name-letter">R</span>
+    <span class="name-letter">i</span>
+    <span class="name-letter">c</span>
+    <span class="name-letter">h</span>
+    <span class="name-letter">a</span>
+    <span class="name-letter">r</span>
+    <span class="name-letter">d</span>
+    <span class="name-space">&nbsp;</span>
+    <span class="name-letter">F</span>
+    <span class="name-letter">r</span>
+    <span class="name-letter">i</span>
+    <span class="name-letter">n</span>
+    <span class="name-letter">k</span>
+  </div>
+
   <canvas id="draw-canvas-static"></canvas>
   <canvas id="draw-canvas-dynamic"></canvas>
   <canvas id="ball-trail-static"></canvas>
@@ -235,12 +261,12 @@
 
       <div class="window-body">
         <h1>Welcome to my place</h1>
-        <p>This site is about me. It also has some goofy ideas I brought to life in html.</p>
 
         <fieldset>
           <legend>About</legend>
-          <p>look around.</p>
-          <p>you'll probably find something that interests you.</p>
+          <p>This site is about me. It also has some goofy ideas I brought to life in html.</p>
+          <br/>
+          <p>look around. you'll probably find something that interests you.</p>
         </fieldset>
 
         <section class="field-row" style="justify-content: flex-end; margin-top: 12px;">
@@ -728,7 +754,7 @@
 
       function isUITarget(t) {
         if (!t || !t.closest) return false;
-        return !!t.closest('.window, #left-stack, #activities-handle, #main-reopen');
+        return !!t.closest('.window, #left-stack, #activities-handle, #main-reopen, #name-display');
       }
 
       clearEl.addEventListener('click', () => {
@@ -961,6 +987,193 @@
         if (e.touches.length !== 1) return;
         e.preventDefault();
       }, { passive: false });
+    })();
+
+    (function () {
+      const container = document.getElementById('name-display');
+      if (!container) return;
+      const letterEls = Array.from(container.querySelectorAll('.name-letter'));
+      if (letterEls.length === 0) return;
+
+      const GRAVITY     = 0.35;
+      const RESTITUTION = 0.5;
+      const FLOOR_DAMP  = 0.84;
+      const AIR_DAMP    = 0.995;
+      const REST_VY     = 0.6;
+      const REST_VX     = 0.1;
+      const THROW_CAP   = 18;
+      const THROW_SCALE = 0.65;
+
+      function getLetterObstacles() {
+        const rects = [];
+        document.querySelectorAll('.window').forEach((w) => {
+          if (w.classList.contains('closed')) return;
+          const r = w.getBoundingClientRect();
+          if (r.width <= 0 || r.height <= 0) return;
+          if (r.right < 0 || r.bottom < 0) return;
+          if (r.left > window.innerWidth || r.top > window.innerHeight) return;
+          rects.push({ x: r.left, y: r.top, w: r.width, h: r.height });
+        });
+        return rects;
+      }
+
+      function collideLetterWithRect(st, rect) {
+        const overlapLeft   = (st.x + st.w) - rect.x;
+        const overlapRight  = (rect.x + rect.w) - st.x;
+        const overlapTop    = (st.y + st.h) - rect.y;
+        const overlapBottom = (rect.y + rect.h) - st.y;
+        if (overlapLeft <= 0 || overlapRight <= 0 || overlapTop <= 0 || overlapBottom <= 0) return false;
+
+        const minX = Math.min(overlapLeft, overlapRight);
+        const minY = Math.min(overlapTop, overlapBottom);
+
+        if (minX < minY) {
+          if (overlapLeft < overlapRight) {
+            st.x = rect.x - st.w;
+            if (st.vx > 0) st.vx = -st.vx * RESTITUTION;
+          } else {
+            st.x = rect.x + rect.w;
+            if (st.vx < 0) st.vx = -st.vx * RESTITUTION;
+          }
+        } else {
+          if (overlapTop < overlapBottom) {
+            st.y = rect.y - st.h;
+            if (st.vy > 0) st.vy = -st.vy * RESTITUTION;
+            st.vx *= FLOOR_DAMP;
+            if (Math.abs(st.vy) < REST_VY) st.vy = 0;
+            if (Math.abs(st.vx) < REST_VX) st.vx = 0;
+          } else {
+            st.y = rect.y + rect.h;
+            if (st.vy < 0) st.vy = -st.vy * RESTITUTION;
+          }
+        }
+        return true;
+      }
+
+      const states = letterEls.map(() => ({
+        free: false, x: 0, y: 0, vx: 0, vy: 0, w: 0, h: 0,
+      }));
+      let activeDrag = null;
+      let animRunning = false;
+
+      function detach(idx) {
+        const el = letterEls[idx];
+        const st = states[idx];
+        if (st.free) return;
+        const rect = el.getBoundingClientRect();
+        st.w = rect.width;
+        st.h = rect.height;
+        st.x = rect.left;
+        st.y = rect.top;
+        st.free = true;
+        el.classList.add('free');
+        el.style.transform = `translate(${st.x}px, ${st.y}px)`;
+      }
+
+      function ensureAnim() {
+        if (animRunning) return;
+        animRunning = true;
+        function frame() {
+          const W = window.innerWidth, H = window.innerHeight;
+          let anyMoving = !!activeDrag;
+          const obstacles = getLetterObstacles();
+          for (let i = 0; i < letterEls.length; i++) {
+            const st = states[i];
+            if (!st.free) continue;
+            if (activeDrag && activeDrag.idx === i) continue;
+
+            st.vy += GRAVITY;
+            st.vx *= AIR_DAMP;
+            st.vy *= AIR_DAMP;
+            st.x  += st.vx;
+            st.y  += st.vy;
+
+            const floor = H - st.h;
+            if (st.y >= floor) {
+              st.y  = floor;
+              st.vy = -st.vy * RESTITUTION;
+              st.vx *= FLOOR_DAMP;
+              if (Math.abs(st.vy) < REST_VY) st.vy = 0;
+              if (Math.abs(st.vx) < REST_VX) st.vx = 0;
+            }
+            if (st.y < 0) {
+              st.y = 0;
+              if (st.vy < 0) st.vy = -st.vy * RESTITUTION;
+            }
+            if (st.x < 0) {
+              st.x = 0;
+              if (st.vx < 0) st.vx = -st.vx * RESTITUTION;
+            }
+            const right = W - st.w;
+            if (st.x > right) {
+              st.x = right;
+              if (st.vx > 0) st.vx = -st.vx * RESTITUTION;
+            }
+
+            for (const o of obstacles) collideLetterWithRect(st, o);
+
+            letterEls[i].style.transform = `translate(${st.x}px, ${st.y}px)`;
+            if (st.vx !== 0 || st.vy !== 0) anyMoving = true;
+          }
+          if (anyMoving) {
+            requestAnimationFrame(frame);
+          } else {
+            animRunning = false;
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      letterEls.forEach((el, idx) => {
+        el.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          detach(idx);
+          const st = states[idx];
+          st.vx = 0;
+          st.vy = 0;
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
+          el.classList.add('dragging');
+          activeDrag = {
+            idx,
+            pointerId: e.pointerId,
+            offsetX: e.clientX - st.x,
+            offsetY: e.clientY - st.y,
+            lastX: e.clientX,
+            lastY: e.clientY,
+            lastT: performance.now(),
+            velX: 0,
+            velY: 0,
+          };
+          ensureAnim();
+        });
+        el.addEventListener('pointermove', (e) => {
+          if (!activeDrag || activeDrag.idx !== idx || e.pointerId !== activeDrag.pointerId) return;
+          e.preventDefault();
+          const st = states[idx];
+          st.x = e.clientX - activeDrag.offsetX;
+          st.y = e.clientY - activeDrag.offsetY;
+          const now = performance.now();
+          const dt  = Math.max(1, now - activeDrag.lastT);
+          activeDrag.velX = (e.clientX - activeDrag.lastX) * 16 / dt;
+          activeDrag.velY = (e.clientY - activeDrag.lastY) * 16 / dt;
+          activeDrag.lastX = e.clientX;
+          activeDrag.lastY = e.clientY;
+          activeDrag.lastT = now;
+          el.style.transform = `translate(${st.x}px, ${st.y}px)`;
+        });
+        function endDrag(e) {
+          if (!activeDrag || activeDrag.idx !== idx || e.pointerId !== activeDrag.pointerId) return;
+          const st = states[idx];
+          st.vx = Math.max(-THROW_CAP, Math.min(THROW_CAP, activeDrag.velX * THROW_SCALE));
+          st.vy = Math.max(-THROW_CAP, Math.min(THROW_CAP, activeDrag.velY * THROW_SCALE));
+          el.classList.remove('dragging');
+          activeDrag = null;
+          ensureAnim();
+        }
+        el.addEventListener('pointerup',     endDrag);
+        el.addEventListener('pointercancel', endDrag);
+      });
     })();
 
     (function () {
