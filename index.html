@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>my-site</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <link rel="stylesheet" href="style.css?v=20260501-15">
+  <link rel="stylesheet" href="style.css?v=20260512-9">
 </head>
 <body>
   <div id="left-stack">
@@ -136,6 +136,7 @@
           <legend>Style</legend>
           <div class="field-row"><input type="radio" id="s-98"     name="site" value="98"><label for="s-98">Windows 98</label></div>
           <div class="field-row"><input type="radio" id="s-nature" name="site" value="nature"><label for="s-nature">Nature</label></div>
+          <div class="field-row"><input type="radio" id="s-space"  name="site" value="space"><label for="s-space">Space</label></div>
         </fieldset>
 
         <details id="themes-98" class="theme-group">
@@ -153,6 +154,13 @@
           <summary>Nature Themes</summary>
           <div class="field-row"><input type="radio" id="t-day"   name="theme" value="day"   data-style="nature"><label for="t-day">Daytime</label></div>
           <div class="field-row"><input type="radio" id="t-night" name="theme" value="night" data-style="nature"><label for="t-night">Nighttime</label></div>
+          <div class="field-row"><input type="radio" id="t-snowy" name="theme" value="snowy" data-style="nature"><label for="t-snowy">Snowy</label></div>
+        </details>
+
+        <details id="themes-space" class="theme-group">
+          <summary>Space Themes</summary>
+          <div class="field-row"><input type="radio" id="t-cosmos" name="theme" value="cosmos" data-style="space"><label for="t-cosmos">Cosmos</label></div>
+          <div class="field-row"><input type="radio" id="t-nebula" name="theme" value="nebula" data-style="space"><label for="t-nebula">Nebula</label></div>
         </details>
       </div>
     </aside>
@@ -284,6 +292,83 @@
 
   <button id="main-reopen" title="Restore welcome.exe" hidden>welcome.exe</button>
 
+  <aside id="section-picker" class="window">
+    <div class="title-bar">
+      <div class="title-bar-text">Section</div>
+      <div class="title-bar-controls">
+        <button id="section-picker-toggle" aria-label="Minimize"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="field-row"><input type="radio" id="sec-main"  name="section" value="main"><label for="sec-main">main</label></div>
+      <div class="field-row"><input type="radio" id="sec-music" name="section" value="music-maker"><label for="sec-music">music maker</label></div>
+    </div>
+  </aside>
+  <button id="section-picker-handle" title="Show section picker">section »</button>
+
+  <main id="music-maker-main">
+    <div id="music-window" class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">music-maker.exe</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <p class="mm-hint">click steps to toggle. each track plays its sound on every step that's on.</p>
+        <div id="mm-transport">
+          <div class="mm-transport-group mm-transport-buttons">
+            <button id="mm-play">play</button>
+            <button id="mm-stop">stop</button>
+            <button id="mm-clear">clear steps</button>
+            <button id="mm-add-track">add track</button>
+            <button id="mm-share-copy" title="Export this pattern as a shareable string">export</button>
+            <button id="mm-share-paste" title="Paste a shared pattern string to load it">paste</button>
+          </div>
+          <div class="mm-transport-group mm-transport-knobs">
+            <label class="mm-knob">
+              <span class="mm-knob-label">tempo</span>
+              <input type="range" id="mm-tempo" min="60" max="200" value="110">
+              <span id="mm-tempo-display" class="mm-knob-value">110 BPM</span>
+            </label>
+            <label class="mm-knob">
+              <span class="mm-knob-label">volume</span>
+              <input type="range" id="mm-volume" min="0" max="100" value="70">
+            </label>
+            <label class="mm-knob">
+              <span class="mm-knob-label">meter</span>
+              <select id="mm-meter">
+                <option value="2">2/4</option>
+                <option value="3">3/4</option>
+                <option value="4" selected>4/4</option>
+                <option value="5">5/4</option>
+                <option value="7">7/4</option>
+              </select>
+            </label>
+            <label class="mm-knob">
+              <span class="mm-knob-label">subdivide</span>
+              <select id="mm-subdivision">
+                <option value="1" selected>1, 2, 3</option>
+                <option value="2">1 &amp; 2 &amp;</option>
+                <option value="4">1 e &amp; a</option>
+              </select>
+            </label>
+            <span class="mm-knob mm-length">
+              <span class="mm-knob-label">steps</span>
+              <button id="mm-steps-dec" class="mm-len-btn" type="button" title="remove a step">−</button>
+              <span id="mm-steps-display" class="mm-knob-value mm-len-value">16</span>
+              <button id="mm-steps-inc" class="mm-len-btn" type="button" title="add a step">+</button>
+            </span>
+          </div>
+        </div>
+        <div id="mm-grid" class="mm-grid"></div>
+      </div>
+    </div>
+    <div id="mm-toast" role="status" aria-live="polite"></div>
+  </main>
+
   <script>
     const SidebarCoord = {
       isMobile() {
@@ -406,7 +491,7 @@
     })();
 
     (function () {
-      const DEFAULT_THEME = { '98': 'classic', 'nature': 'day' };
+      const DEFAULT_THEME = { '98': 'classic', 'nature': 'day', 'space': 'cosmos' };
 
       function applySite(v)  { document.documentElement.setAttribute('data-site',  v); localStorage.setItem('site',  v); }
       function applyTheme(v) { document.documentElement.setAttribute('data-theme', v); localStorage.setItem('theme', v); }
@@ -419,6 +504,7 @@
       function openGroupFor(site) {
         document.getElementById('themes-98').open      = (site === '98');
         document.getElementById('themes-nature').open  = (site === 'nature');
+        document.getElementById('themes-space').open   = (site === 'space');
       }
 
       let site  = localStorage.getItem('site')  || '98';
@@ -733,6 +819,74 @@
       function trailCtxFor(mode) { return mode === 'dynamic' ? tdCtx : tsCtx; }
       function ballCtxFor(mode)  { return mode === 'dynamic' ? bdCtx : bsCtx; }
 
+      function currentShape() {
+        const site = document.documentElement.getAttribute('data-site');
+        if (site === 'nature') return 'flower';
+        if (site === 'space')  return 'planet';
+        return 'circle';
+      }
+
+      const daisyImg = new Image();
+      daisyImg.src = './daisy_no_background.png';
+      const tintedDaisyCache = new Map();
+      function getTintedDaisy(color) {
+        let c = tintedDaisyCache.get(color);
+        if (c) return c;
+        c = document.createElement('canvas');
+        c.width = daisyImg.naturalWidth;
+        c.height = daisyImg.naturalHeight;
+        const cctx = c.getContext('2d');
+        cctx.drawImage(daisyImg, 0, 0);
+        cctx.globalCompositeOperation = 'source-in';
+        cctx.fillStyle = color;
+        cctx.fillRect(0, 0, c.width, c.height);
+        tintedDaisyCache.set(color, c);
+        return c;
+      }
+
+      function drawShape(ctx, x, y, r, color, shape) {
+        ctx.fillStyle = color;
+        if (shape === 'flower') {
+          if (daisyImg.complete && daisyImg.naturalWidth > 0) {
+            const size = r * 2.4;
+            const iw = daisyImg.naturalWidth, ih = daisyImg.naturalHeight;
+            const maxDim = Math.max(iw, ih);
+            const dw = size * (iw / maxDim);
+            const dh = size * (ih / maxDim);
+            ctx.drawImage(getTintedDaisy(color), x - dw / 2, y - dh / 2, dw, dh);
+          } else {
+            const petalR = r * 0.55;
+            const offset = r * 0.6;
+            for (let i = 0; i < 5; i++) {
+              const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+              const px = x + Math.cos(a) * offset;
+              const py = y + Math.sin(a) * offset;
+              ctx.beginPath();
+              ctx.arc(px, py, petalR, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.beginPath();
+            ctx.arc(x, y, r * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (shape === 'planet') {
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(1, r * 0.18);
+          ctx.beginPath();
+          ctx.ellipse(x, y, r * 1.55, r * 0.45, -0.35, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
       function resize() {
         const dpr = window.devicePixelRatio || 1;
         const w = window.innerWidth, h = window.innerHeight;
@@ -874,15 +1028,13 @@
         return Math.hypot(ball.vx, ball.vy) > MIN_SPEED;
       }
 
-      function drawArrow(from, to, color, mode, radius) {
+      function drawArrow(from, to, color, mode, radius, shape) {
         const ctx = ballCtxFor(mode);
+        drawShape(ctx, from.x, from.y, radius, color, shape);
         ctx.save();
         ctx.fillStyle = color;
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(from.x, from.y, radius, 0, Math.PI * 2);
-        ctx.fill();
 
         const dx = to.x - from.x, dy = to.y - from.y;
         const len = Math.hypot(dx, dy);
@@ -923,11 +1075,7 @@
             balls = balls.filter((b) => Math.hypot(b.vx, b.vy) > MIN_SPEED);
           }
           for (const b of balls) {
-            const ctx = ballCtxFor(b.mode);
-            ctx.fillStyle = b.color;
-            ctx.beginPath();
-            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-            ctx.fill();
+            drawShape(ballCtxFor(b.mode), b.x, b.y, b.radius, b.color, b.shape);
           }
           if (dragStart && dragCurrent) {
             const mode = dynamicEl.checked ? 'dynamic' : 'static';
@@ -936,7 +1084,7 @@
               x: dragStart.x - (dragCurrent.x - dragStart.x),
               y: dragStart.y - (dragCurrent.y - dragStart.y),
             };
-            drawArrow(dragStart, aimTo, color, mode, sizeEl.valueAsNumber);
+            drawArrow(dragStart, aimTo, color, mode, sizeEl.valueAsNumber, currentShape());
           }
           if (anyMoving || (dragStart && dragCurrent)) {
             requestAnimationFrame(frame);
@@ -985,6 +1133,7 @@
               radius: sizeEl.valueAsNumber,
               color,
               mode,
+              shape: currentShape(),
               trail: trailEl.checked,
             });
             suppressClickUntil = performance.now() + 250;
@@ -1237,6 +1386,560 @@
         reopen.hidden = true;
         SidebarCoord.collapseAllSidebars();
       });
+    })();
+
+    (function () {
+      function applySection(v) {
+        document.documentElement.setAttribute('data-section', v);
+        localStorage.setItem('section', v);
+      }
+      const stored = localStorage.getItem('section') || 'main';
+      applySection(stored);
+      const radio = document.querySelector('input[name="section"][value="' + stored + '"]');
+      if (radio) radio.checked = true;
+      document.querySelectorAll('input[name="section"]').forEach((r) => {
+        r.addEventListener('change', () => applySection(r.value));
+      });
+
+      const picker   = document.getElementById('section-picker');
+      const toggle   = document.getElementById('section-picker-toggle');
+      const handle   = document.getElementById('section-picker-handle');
+      const titleBar = picker.querySelector('.title-bar');
+
+      const collapsed = SidebarCoord.isMobile()
+        ? true
+        : (localStorage.getItem('section-picker-collapsed') === '1');
+      if (collapsed) picker.classList.add('collapsed');
+
+      function setCollapsed(v) {
+        picker.classList.toggle('collapsed', v);
+        localStorage.setItem('section-picker-collapsed', v ? '1' : '0');
+      }
+      function toggleCollapsed() {
+        setCollapsed(!picker.classList.contains('collapsed'));
+      }
+
+      toggle.addEventListener('click', (e) => { e.stopPropagation(); toggleCollapsed(); });
+      handle.addEventListener('click', () => setCollapsed(false));
+      titleBar.addEventListener('click', (e) => {
+        if (e.target.closest('.title-bar-controls')) return;
+        toggleCollapsed();
+      });
+    })();
+
+    (function () {
+      let ctx = null;
+      let master = null;
+      function ensureCtx() {
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        if (!master) {
+          master = ctx.createGain();
+          master.gain.value = (document.getElementById('mm-volume').valueAsNumber) / 100;
+          master.connect(ctx.destination);
+        }
+        return ctx;
+      }
+
+      const CHROMATIC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+      const NOTES = (() => {
+        const out = [];
+        for (let oct = 2; oct <= 5; oct++) {
+          for (const n of CHROMATIC) {
+            if (oct === 5 && CHROMATIC.indexOf(n) > CHROMATIC.indexOf('E')) break;
+            out.push(n + oct);
+          }
+        }
+        return out;
+      })();
+      function noteFreq(n) {
+        const map = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+        const letter = n[0];
+        const hasSharp = n[1] === '#';
+        const hasFlat  = n[1] === 'b';
+        const octave = parseInt(n.slice(hasSharp || hasFlat ? 2 : 1), 10);
+        let semis = map[letter];
+        if (hasSharp) semis += 1;
+        if (hasFlat)  semis -= 1;
+        const midi = (octave + 1) * 12 + semis;
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      const PRESETS = {
+        kick:  { pitched: false, label: 'kick' },
+        snare: { pitched: false, label: 'snare' },
+        hihat: { pitched: false, label: 'hi-hat' },
+        clap:  { pitched: false, label: 'clap' },
+        tom:   { pitched: false, label: 'tom' },
+        bass:  { pitched: true,  label: 'bass',  wave: 'sawtooth', attack: 0.005, decay: 0.18, gain: 0.32, filter: 800 },
+        lead:  { pitched: true,  label: 'lead',  wave: 'square',   attack: 0.005, decay: 0.22, gain: 0.22, filter: 3500 },
+        pluck: { pitched: true,  label: 'pluck', wave: 'triangle', attack: 0.001, decay: 0.12, gain: 0.32, filter: 5000 },
+        pad:   { pitched: true,  label: 'pad',   wave: 'sine',     attack: 0.08,  decay: 0.5,  gain: 0.28, filter: 2000 },
+        bell:  { pitched: true,  label: 'bell',  wave: 'sine',     attack: 0.001, decay: 0.6,  gain: 0.22, filter: 6000, fm: true },
+      };
+
+      function noiseBuffer(durSec) {
+        const len = Math.max(1, Math.floor(ctx.sampleRate * durSec));
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        return buf;
+      }
+
+      function playKick(time) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(160, time);
+        o.frequency.exponentialRampToValueAtTime(40, time + 0.18);
+        g.gain.setValueAtTime(0.0001, time);
+        g.gain.exponentialRampToValueAtTime(1, time + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, time + 0.32);
+        o.connect(g); g.connect(master);
+        o.start(time); o.stop(time + 0.36);
+      }
+      function playSnare(time) {
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer(0.2);
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 1600;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.55, time);
+        ng.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+        noise.connect(hp); hp.connect(ng); ng.connect(master);
+        noise.start(time); noise.stop(time + 0.22);
+        const o = ctx.createOscillator();
+        const og = ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = 210;
+        og.gain.setValueAtTime(0.32, time);
+        og.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+        o.connect(og); og.connect(master);
+        o.start(time); o.stop(time + 0.12);
+      }
+      function playHat(time) {
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer(0.06);
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 7500;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.28, time);
+        g.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+        noise.connect(hp); hp.connect(g); g.connect(master);
+        noise.start(time); noise.stop(time + 0.06);
+      }
+      function playClap(time) {
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer(0.18);
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 1200;
+        bp.Q.value = 1.4;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, time);
+        g.gain.linearRampToValueAtTime(0.5, time + 0.004);
+        g.gain.linearRampToValueAtTime(0.05, time + 0.018);
+        g.gain.linearRampToValueAtTime(0.45, time + 0.024);
+        g.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+        noise.connect(bp); bp.connect(g); g.connect(master);
+        noise.start(time); noise.stop(time + 0.2);
+      }
+      function playTom(time) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(220, time);
+        o.frequency.exponentialRampToValueAtTime(90, time + 0.25);
+        g.gain.setValueAtTime(0.0001, time);
+        g.gain.exponentialRampToValueAtTime(0.7, time + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+        o.connect(g); g.connect(master);
+        o.start(time); o.stop(time + 0.38);
+      }
+      function playSynth(time, freq, p) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        const f = ctx.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.value = p.filter;
+        o.type = p.wave;
+        o.frequency.value = freq;
+        const att = p.attack, dec = p.decay;
+        g.gain.setValueAtTime(0.0001, time);
+        g.gain.linearRampToValueAtTime(p.gain, time + att);
+        g.gain.exponentialRampToValueAtTime(0.0001, time + att + dec);
+        o.connect(f); f.connect(g); g.connect(master);
+        o.start(time); o.stop(time + att + dec + 0.05);
+
+        if (p.fm) {
+          const mod = ctx.createOscillator();
+          const modG = ctx.createGain();
+          mod.type = 'sine';
+          mod.frequency.value = freq * 3.5;
+          modG.gain.setValueAtTime(freq * 1.5, time);
+          modG.gain.exponentialRampToValueAtTime(0.01, time + dec);
+          mod.connect(modG); modG.connect(o.frequency);
+          mod.start(time); mod.stop(time + att + dec + 0.05);
+        }
+      }
+      function play(preset, note, time) {
+        if (preset === 'kick')  return playKick(time);
+        if (preset === 'snare') return playSnare(time);
+        if (preset === 'hihat') return playHat(time);
+        if (preset === 'clap')  return playClap(time);
+        if (preset === 'tom')   return playTom(time);
+        const p = PRESETS[preset];
+        if (!p) return;
+        playSynth(time, noteFreq(note), p);
+      }
+
+      const MAX_STEPS = 128;
+      let stepCount = 16;
+      let meter = 4;
+      let subdivision = 1;
+      let nextTrackId = 0;
+      const tracks = [];
+      const gridEl = document.getElementById('mm-grid');
+      const stepsDisplay = document.getElementById('mm-steps-display');
+      const meterEl = document.getElementById('mm-meter');
+      const subdivisionEl = document.getElementById('mm-subdivision');
+
+      function stepClasses(i, on) {
+        // Each step is one subdivision of a beat. A measure is `meter * subdivision` steps.
+        const beat = (i % subdivision === 0);
+        const downbeat = (i % (meter * subdivision) === 0);
+        return (on ? ' on' : '') + (beat ? ' beat' : '') + (downbeat ? ' downbeat' : '');
+      }
+
+      function stepLabel(i) {
+        const measureLen = meter * subdivision;
+        const inMeasure = i % measureLen;
+        const subIdx = inMeasure % subdivision;
+        const beatIdx = Math.floor(inMeasure / subdivision);
+        if (subIdx === 0) return String(beatIdx + 1);
+        if (subdivision === 2) return '&';
+        if (subdivision === 4) {
+          if (subIdx === 1) return 'e';
+          if (subIdx === 2) return '&';
+          if (subIdx === 3) return 'a';
+        }
+        return '·';
+      }
+
+      function applyGridColumns() {
+        gridEl.style.gridTemplateColumns =
+          'var(--mm-col-preset) var(--mm-col-note) var(--mm-col-mute) ' +
+          'repeat(' + stepCount + ', var(--mm-cell-size)) ' +
+          'var(--mm-col-mute)';
+      }
+
+      function snapSteps(n) {
+        // Force step count to a whole number of measures.
+        const measureLen = meter * subdivision;
+        let snapped = Math.round(n / measureLen) * measureLen;
+        if (snapped < measureLen) snapped = measureLen;
+        const maxMeasures = Math.floor(MAX_STEPS / measureLen);
+        if (snapped > maxMeasures * measureLen) snapped = maxMeasures * measureLen;
+        return snapped;
+      }
+
+      function setStepCount(n) {
+        const next = snapSteps(n);
+        if (next === stepCount) return;
+        for (const t of tracks) {
+          if (next > t.steps.length) {
+            while (t.steps.length < next) t.steps.push(false);
+          } else {
+            t.steps.length = next;
+          }
+        }
+        stepCount = next;
+        if (currentStep >= stepCount) currentStep = 0;
+        stepsDisplay.textContent = String(stepCount);
+        renderGrid();
+      }
+
+      function addTrack(preset, note) {
+        const t = {
+          id: ++nextTrackId,
+          preset: preset || 'kick',
+          note: note || 'C3',
+          mute: false,
+          steps: new Array(stepCount).fill(false),
+        };
+        tracks.push(t);
+        renderGrid();
+        return t;
+      }
+      function deleteTrack(id) {
+        const i = tracks.findIndex((t) => t.id === id);
+        if (i >= 0) tracks.splice(i, 1);
+        renderGrid();
+      }
+
+      function makeCell(tag, classes, text) {
+        const el = document.createElement(tag);
+        if (classes) el.className = classes;
+        if (text != null) el.textContent = text;
+        return el;
+      }
+
+      function renderGrid() {
+        gridEl.innerHTML = '';
+        applyGridColumns();
+
+        gridEl.appendChild(makeCell('span', 'mm-cell mm-col-preset mm-header-cell', 'sound'));
+        gridEl.appendChild(makeCell('span', 'mm-cell mm-col-note mm-header-cell',   'note'));
+        gridEl.appendChild(makeCell('span', 'mm-cell mm-col-mute mm-header-cell',   'mute'));
+        for (let i = 0; i < stepCount; i++) {
+          const label = makeCell('span', 'mm-cell mm-step-label' + stepClasses(i, false), stepLabel(i));
+          gridEl.appendChild(label);
+        }
+        gridEl.appendChild(makeCell('span', 'mm-cell mm-header-cell'));
+
+        for (const t of tracks) {
+          const presetSel = document.createElement('select');
+          presetSel.className = 'mm-cell mm-col-preset mm-preset';
+          Object.keys(PRESETS).forEach((k) => {
+            const o = document.createElement('option');
+            o.value = k;
+            o.textContent = PRESETS[k].label;
+            if (k === t.preset) o.selected = true;
+            presetSel.appendChild(o);
+          });
+          presetSel.addEventListener('change', () => {
+            t.preset = presetSel.value;
+            renderGrid();
+          });
+          gridEl.appendChild(presetSel);
+
+          const noteSel = document.createElement('select');
+          noteSel.className = 'mm-cell mm-col-note mm-note';
+          NOTES.forEach((n) => {
+            const o = document.createElement('option');
+            o.value = n; o.textContent = n;
+            if (n === t.note) o.selected = true;
+            noteSel.appendChild(o);
+          });
+          noteSel.addEventListener('change', () => { t.note = noteSel.value; });
+          if (!PRESETS[t.preset].pitched) noteSel.style.visibility = 'hidden';
+          gridEl.appendChild(noteSel);
+
+          const muteBtn = document.createElement('button');
+          muteBtn.type = 'button';
+          muteBtn.className = 'mm-cell mm-col-mute mm-mute' + (t.mute ? ' on' : '');
+          muteBtn.textContent = t.mute ? 'M' : 'm';
+          muteBtn.title = t.mute ? 'unmute' : 'mute';
+          muteBtn.addEventListener('click', () => { t.mute = !t.mute; renderGrid(); });
+          gridEl.appendChild(muteBtn);
+
+          for (let i = 0; i < stepCount; i++) {
+            const cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'mm-cell mm-step' + stepClasses(i, t.steps[i]);
+            cell.dataset.idx = String(i);
+            cell.addEventListener('click', () => {
+              t.steps[i] = !t.steps[i];
+              cell.classList.toggle('on', t.steps[i]);
+              if (t.steps[i]) {
+                ensureCtx();
+                play(t.preset, t.note, ctx.currentTime + 0.001);
+              }
+            });
+            gridEl.appendChild(cell);
+          }
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'mm-cell mm-delete';
+          delBtn.textContent = '×';
+          delBtn.title = 'remove track';
+          delBtn.addEventListener('click', () => deleteTrack(t.id));
+          gridEl.appendChild(delBtn);
+        }
+      }
+
+      document.getElementById('mm-steps-inc').addEventListener('click', () => setStepCount(stepCount + meter * subdivision));
+      document.getElementById('mm-steps-dec').addEventListener('click', () => setStepCount(stepCount - meter * subdivision));
+      meterEl.addEventListener('change', () => {
+        meter = parseInt(meterEl.value, 10);
+        const target = snapSteps(stepCount);
+        if (target !== stepCount) setStepCount(target); else renderGrid();
+      });
+      subdivisionEl.addEventListener('change', () => {
+        const oldSub = subdivision;
+        subdivision = parseInt(subdivisionEl.value, 10);
+        // Keep the same number of measures when changing subdivision.
+        const measures = Math.max(1, Math.round(stepCount / (meter * oldSub)));
+        const target = measures * meter * subdivision;
+        if (target !== stepCount) setStepCount(target); else renderGrid();
+      });
+
+      // --- Share via base64 ---
+      function serializeState() {
+        return {
+          v: 1,
+          m: meter,
+          s: subdivision,
+          n: stepCount,
+          t: parseInt(document.getElementById('mm-tempo').value, 10),
+          vol: parseInt(document.getElementById('mm-volume').value, 10),
+          tr: tracks.map((t) => ({
+            p: t.preset,
+            nt: t.note,
+            mu: t.mute ? 1 : 0,
+            on: t.steps.map((v, i) => (v ? i : -1)).filter((i) => i >= 0),
+          })),
+        };
+      }
+      function encodeShare() {
+        return btoa(JSON.stringify(serializeState()));
+      }
+      function decodeShare(str) {
+        return JSON.parse(atob(str.trim()));
+      }
+      function applyState(state) {
+        if (!state || typeof state !== 'object' || !Array.isArray(state.tr)) {
+          throw new Error('invalid state');
+        }
+        stopPlay();
+        meter = state.m || 4;
+        subdivision = state.s || 1;
+        stepCount = state.n || 16;
+        meterEl.value = String(meter);
+        subdivisionEl.value = String(subdivision);
+        const tempoVal = state.t || 110;
+        const volVal = state.vol != null ? state.vol : 70;
+        document.getElementById('mm-tempo').value = String(tempoVal);
+        document.getElementById('mm-tempo-display').textContent = tempoVal + ' BPM';
+        document.getElementById('mm-volume').value = String(volVal);
+        if (master) master.gain.value = volVal / 100;
+        stepsDisplay.textContent = String(stepCount);
+        tracks.length = 0;
+        nextTrackId = 0;
+        for (const tt of state.tr) {
+          const t = {
+            id: ++nextTrackId,
+            preset: tt.p || 'kick',
+            note: tt.nt || 'C3',
+            mute: !!tt.mu,
+            steps: new Array(stepCount).fill(false),
+          };
+          if (Array.isArray(tt.on)) {
+            for (const idx of tt.on) {
+              if (idx >= 0 && idx < stepCount) t.steps[idx] = true;
+            }
+          }
+          tracks.push(t);
+        }
+        renderGrid();
+      }
+      const toastEl = document.getElementById('mm-toast');
+      let toastTimer = null;
+      function showToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.remove('show');
+        // Force reflow so the animation restarts when triggered rapidly.
+        void toastEl.offsetWidth;
+        toastEl.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+      }
+      document.getElementById('mm-share-copy').addEventListener('click', async () => {
+        const encoded = encodeShare();
+        try {
+          await navigator.clipboard.writeText(encoded);
+          showToast('exported to clipboard');
+        } catch (_) {
+          prompt('Copy this share string:', encoded);
+          showToast('exported');
+        }
+      });
+      document.getElementById('mm-share-paste').addEventListener('click', () => {
+        const input = prompt('Paste a shared pattern string:');
+        if (!input) return;
+        try {
+          applyState(decodeShare(input));
+        } catch (_) {
+          alert('That string didn\'t look like a valid pattern.');
+        }
+      });
+
+      let playing = false;
+      let currentStep = 0;
+      let nextStepTime = 0;
+      let timerId = null;
+
+      function stepDurationSec() {
+        const bpm = parseInt(document.getElementById('mm-tempo').value, 10);
+        return 60 / bpm / subdivision;
+      }
+
+      function scheduler() {
+        const lookahead = 0.1;
+        while (nextStepTime < ctx.currentTime + lookahead) {
+          const step = currentStep;
+          const time = nextStepTime;
+          for (const t of tracks) {
+            if (t.mute) continue;
+            if (t.steps[step]) play(t.preset, t.note, time);
+          }
+          const delayMs = Math.max(0, (time - ctx.currentTime) * 1000);
+          setTimeout(() => {
+            document.querySelectorAll('.mm-step.playing').forEach((e) => e.classList.remove('playing'));
+            document.querySelectorAll('.mm-step[data-idx="' + step + '"]').forEach((e) => e.classList.add('playing'));
+          }, delayMs);
+
+          nextStepTime += stepDurationSec();
+          currentStep = (currentStep + 1) % stepCount;
+        }
+      }
+
+      function startPlay() {
+        ensureCtx();
+        if (playing) return;
+        playing = true;
+        currentStep = 0;
+        nextStepTime = ctx.currentTime + 0.05;
+        timerId = setInterval(scheduler, 25);
+      }
+      function stopPlay() {
+        playing = false;
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        document.querySelectorAll('.mm-step.playing').forEach((e) => e.classList.remove('playing'));
+      }
+
+      document.getElementById('mm-play').addEventListener('click', startPlay);
+      document.getElementById('mm-stop').addEventListener('click', stopPlay);
+      document.getElementById('mm-clear').addEventListener('click', () => {
+        for (const t of tracks) t.steps.fill(false);
+        renderTracks();
+      });
+      document.getElementById('mm-add-track').addEventListener('click', () => addTrack('hihat'));
+
+      const tempoEl = document.getElementById('mm-tempo');
+      const tempoDisplay = document.getElementById('mm-tempo-display');
+      tempoEl.addEventListener('input', () => { tempoDisplay.textContent = tempoEl.value + ' BPM'; });
+
+      const volumeEl = document.getElementById('mm-volume');
+      volumeEl.addEventListener('input', () => {
+        if (master) master.gain.value = volumeEl.valueAsNumber / 100;
+      });
+
+      // sensible defaults so the user has something to mess with immediately.
+      // A measure is `meter * subdivision` steps.
+      const _measureLen = meter * subdivision;
+      const _halfMeasure = Math.floor(_measureLen / 2);
+      const t1 = addTrack('kick');
+      for (let i = 0; i < stepCount; i += _measureLen) t1.steps[i] = true; // downbeat of each measure
+      const t2 = addTrack('snare');
+      for (let i = _halfMeasure; i < stepCount; i += _measureLen) t2.steps[i] = true; // mid-measure hit
+      const t3 = addTrack('hihat');
+      for (let i = 0; i < stepCount; i += subdivision) t3.steps[i] = true; // every beat
+      const t4 = addTrack('bass', 'C2');
+      t4.steps[0] = true;
+      renderGrid();
     })();
   </script>
 </body>
