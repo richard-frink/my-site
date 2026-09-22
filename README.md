@@ -1,5 +1,7 @@
 # my-site
 
+https://richard-frink.github.io/my-site/
+
 Personal site hosted via GitHub Pages.
 
 ## Local preview
